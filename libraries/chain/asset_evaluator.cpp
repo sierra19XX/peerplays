@@ -119,6 +119,7 @@ void_result asset_create_evaluator::do_evaluate( const asset_create_operation& o
    return void_result();
 } FC_CAPTURE_AND_RETHROW( (op) ) }
 
+// copied from bitshares. (https://github.com/bitshares/bitshares-core/issues/429)
 void asset_create_evaluator::pay_fee()
 {
    fee_is_odd = core_fee_paid.value & 1;
