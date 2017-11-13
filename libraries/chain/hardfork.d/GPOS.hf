@@ -2,3 +2,4 @@
 #ifndef HARDFORK_GPOS_TIME
 #define HARDFORK_GPOS_TIME (fc::time_point_sec( 1552694248 ))
 #endif
+
