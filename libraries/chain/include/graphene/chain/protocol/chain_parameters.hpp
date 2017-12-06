@@ -93,6 +93,11 @@ namespace graphene { namespace chain {
       uint32_t                maximum_tournament_start_time_in_future = TOURNAMENT_MAX_START_TIME_IN_FUTURE;
       uint32_t                maximum_tournament_start_delay      = TOURNAMENT_MAX_START_DELAY;
       uint16_t                maximum_tournament_number_of_wins   = TOURNAMENT_MAX_NUMBER_OF_WINS;
+      //
+      uint16_t                sweeps_distribution_percentage      = SWEEPS_DEFAULT_DISTRIBUTION_PERCENTAGE;
+      asset_id_type           sweeps_distribution_asset           = SWEEPS_DEFAULT_DISTRIBUTION_ASSET;
+      
+
       extension<parameter_extension> extensions;
 
       /** defined in fee_schedule.cpp */
@@ -184,5 +189,7 @@ FC_REFLECT( graphene::chain::chain_parameters,
             (maximum_tournament_start_time_in_future)
             (maximum_tournament_start_delay)
             (maximum_tournament_number_of_wins)
+            (sweeps_distribution_percentage)
+            (sweeps_distribution_asset)
             (extensions)
           )

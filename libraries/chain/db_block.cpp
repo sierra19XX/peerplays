@@ -609,7 +609,9 @@ void database::_apply_block( const signed_block& next_block )
    // Are we at the maintenance interval?
    if( maint_needed )
       perform_chain_maintenance(next_block, global_props);
-
+   
+   check_ending_lotteries();
+   
    create_block_summary(next_block);
    place_delayed_bets(); // must happen after update_global_dynamic_data() updates the time
    clear_expired_transactions();

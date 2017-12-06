@@ -189,9 +189,10 @@ void database_fixture::verify_asset_supplies( const database& db )
         total_balances[t.options.buy_in.asset_id] += t.prize_pool;
 
    for( const asset_object& ai : asst_index)
-      if (ai.is_lottery()) 
-         total_balances[ ai.lottery_options->balance.asset_id ] += ai.lottery_options->balance.amount;
-
+      if (ai.is_lottery()) {
+         asset balance = db.get_balance( ai.get_id() );
+         total_balances[ balance.asset_id ] += balance.amount;
+      }
    for( const account_balance_object& b : balance_index )
       total_balances[b.asset_type] += b.balance;
    for( const force_settlement_object& s : settle_index )
@@ -244,6 +245,12 @@ void database_fixture::verify_asset_supplies( const database& db )
       total_balances[betting_market_group.asset_id] += o.fees_collected;
    }
 
+   
+   uint64_t sweeps_vestings = 0;
+   for( const sweeps_vesting_balance_object& svbo: db.get_index_type< sweeps_vesting_balance_index >().indices() )
+      sweeps_vestings += svbo.balance;
+   
+   total_balances[db.get_global_properties().parameters.sweeps_distribution_asset] += sweeps_vestings / SWEEPS_VESTING_BALANCE_MULTIPLIER;
    total_balances[asset_id_type()] += db.get_dynamic_global_properties().witness_budget;
 
    for( const auto& item : total_debts )

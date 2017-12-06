@@ -208,4 +208,24 @@ void database::force_slow_replays()
    _slow_replays = true;
 }
 
+void database::check_ending_lotteries()
+{
+   const auto& lotteries_idx = get_index_type<asset_index>().indices().get<active_lotteries>();
+   for( auto checking_asset: lotteries_idx )
+   {
+      if( !checking_asset.is_lottery() ) break;
+      if( !checking_asset.lottery_options->is_active ) break;
+      if( checking_asset.lottery_options->end_date >= head_block_time() ) break;
+      checking_asset.end_lottery(*this);
+   }
+}
+
+void database::check_lottery_end_by_participants( asset_id_type asset_id )
+{
+   asset_object asset_to_check = asset_id( *this );
+   if( !asset_to_check.is_lottery() ) return;
+   if( !asset_to_check.lottery_options->ending_on_soldout ) return;
+   asset_to_check.end_lottery( *this );
+}
+
 } }
