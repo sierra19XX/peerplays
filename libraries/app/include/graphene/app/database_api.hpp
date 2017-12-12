@@ -359,6 +359,9 @@ class database_api
       vector<asset_object> get_lotteries( asset_id_type stop  = asset_id_type(),
                                           unsigned limit = 100,
                                           asset_id_type start = asset_id_type() )const;
+
+      sweeps_vesting_balance_object get_sweeps_vesting_balance_object( account_id_type account )const;
+      asset get_sweeps_vesting_balance_available_for_claim( account_id_type account )const;
       /**
        * @brief Get balance of lottery assets
        */
@@ -750,9 +753,11 @@ FC_API(graphene::app::database_api,
    (get_unmatched_bets_for_bettor)
    (get_all_unmatched_bets_for_bettor)
    
-   // Lottery assets
+   // Sweeps
    (get_lotteries)
    (get_lottery_balance)
+   (get_sweeps_vesting_balance_object)
+   (get_sweeps_vesting_balance_available_for_claim)
    
    // Markets / feeds
    (get_order_book)

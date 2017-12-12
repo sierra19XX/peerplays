@@ -32,6 +32,7 @@
 namespace graphene { namespace chain { struct fee_schedule; } }
 
 namespace graphene { namespace chain {
+<<<<<<< HEAD
    struct parameter_extension
    {
       optional< bet_multiplier_type > min_bet_multiplier;
@@ -46,6 +47,14 @@ namespace graphene { namespace chain {
       optional < uint16_t >           son_count;
    };
 
+=======
+   struct sweeps_parameters_extension {
+      uint16_t                sweeps_distribution_percentage      = SWEEPS_DEFAULT_DISTRIBUTION_PERCENTAGE;
+      asset_id_type           sweeps_distribution_asset           = SWEEPS_DEFAULT_DISTRIBUTION_ASSET;
+      account_id_type         sweeps_vesting_accumulator_account  = SWEEPS_ACCUMULATOR_ACCOUNT;
+   };
+   typedef static_variant<void_t,sweeps_parameters_extension>  parameter_extension; 
+>>>>>>> fix reindex on peerplays network
    struct chain_parameters
    {
       /** using a smart ref breaks the circular dependency created between operations and the fee schedule */
@@ -96,9 +105,8 @@ namespace graphene { namespace chain {
       //
       uint16_t                sweeps_distribution_percentage      = SWEEPS_DEFAULT_DISTRIBUTION_PERCENTAGE;
       asset_id_type           sweeps_distribution_asset           = SWEEPS_DEFAULT_DISTRIBUTION_ASSET;
-      
-
-      extension<parameter_extension> extensions;
+            
+      extension<parameter_extension> extensions = sweeps_parameters_extension();
 
       /** defined in fee_schedule.cpp */
       void validate()const;
@@ -146,6 +154,10 @@ FC_REFLECT( graphene::chain::parameter_extension,
    (son_count)
 )
 
+FC_REFLECT( graphene::chain::sweeps_parameters_extension, 
+            (sweeps_distribution_percentage)
+            (sweeps_distribution_asset) )
+
 FC_REFLECT( graphene::chain::chain_parameters,
             (current_fees)
             (block_interval)
@@ -189,7 +201,5 @@ FC_REFLECT( graphene::chain::chain_parameters,
             (maximum_tournament_start_time_in_future)
             (maximum_tournament_start_delay)
             (maximum_tournament_number_of_wins)
-            (sweeps_distribution_percentage)
-            (sweeps_distribution_asset)
             (extensions)
           )
