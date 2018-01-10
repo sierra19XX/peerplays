@@ -260,6 +260,7 @@ namespace graphene { namespace chain {
          if ( !lhs.is_lottery() ) return false;
          if ( !lhs.lottery_options->is_active && !rhs.is_lottery()) return true; // not active lotteries first, just assets then
          if ( !lhs.lottery_options->is_active ) return false;
+         if ( lhs.lottery_options->is_active && ( !rhs.is_lottery() || !rhs.lottery_options->is_active ) ) return true;
          return lhs.get_lottery_expiration() > rhs.get_lottery_expiration();
       }
    };
@@ -269,6 +270,7 @@ namespace graphene { namespace chain {
    struct by_issuer;
    struct active_lotteries;
    struct by_lottery;
+   struct by_lottery_owner;
    typedef multi_index_container<
       asset_object,
       indexed_by<
@@ -280,6 +282,17 @@ namespace graphene { namespace chain {
             lottery_asset_comparer
          >,
          ordered_unique< tag<by_lottery>,
+            composite_key<
+               asset_object,
+               const_mem_fun<asset_object, bool, &asset_object::is_lottery>,
+               member<object, object_id_type, &object::id>
+            >,
+            composite_key_compare<
+               std::greater< bool >,
+               std::greater< object_id_type >
+            >
+         >,
+         ordered_unique< tag<by_lottery_owner>,
             composite_key<
                asset_object,
                const_mem_fun<asset_object, bool, &asset_object::is_lottery>,
@@ -301,6 +314,7 @@ namespace graphene { namespace chain {
       >
    > asset_object_multi_index_type;
    typedef generic_index<asset_object, asset_object_multi_index_type> asset_index;
+
 
    /**
     *  @brief contains properties that only apply to dividend-paying assets
