@@ -228,3 +228,5 @@
 #define TOURNAMENT_MAX_START_DELAY                          (60*60*24*7) // 1 week
 #define GPOS_PERIOD                                         (60*60*24*30*6) // 6 months
 #define GPOS_SUBPERIOD                                      (60*60*24*30) // 1 month
+
+#define GRAPHENE_MAX_NESTED_OBJECTS (200)
