@@ -429,9 +429,7 @@ bool database::fill_order(const force_settlement_object& settle, const asset& pa
 bool database::check_call_orders( const asset_object& mia, bool enable_black_swan, bool for_new_limit_order,
                                   const asset_bitasset_data_object* bitasset_ptr )
 { try {
-    static const auto& dyn_prop = get_dynamic_global_properties();
     if( !mia.is_market_issued() ) return false;
-    auto maint_time = dyn_prop.next_maintenance_time;
 
     const asset_bitasset_data_object& bitasset = ( bitasset_ptr ? *bitasset_ptr : mia.bitasset_data(*this) );
 
@@ -471,7 +469,6 @@ bool database::check_call_orders( const asset_object& mia, bool enable_black_swa
     auto head_time = head_block_time();
     auto head_num = head_block_num();
 
-    bool before_hardfork_615 = ( head_time < HARDFORK_615_TIME );
     bool after_hardfork_436 = ( head_time > HARDFORK_436_TIME );
 
     while( !check_for_blackswan( mia, enable_black_swan, &bitasset ) && call_itr != call_end )
@@ -491,7 +488,7 @@ bool database::check_call_orders( const asset_object& mia, bool enable_black_swa
 
        // would be margin called, but there is no matching order #436
        bool feed_protected = ( bitasset.current_feed.settlement_price > ~call_itr->call_price );
-       if( feed_protected && (head_block_time() > HARDFORK_436_TIME) )
+       if( feed_protected && after_hardfork_436 )
           return margin_called;
 
        // would be margin called, but there is no matching order
