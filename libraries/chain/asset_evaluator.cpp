@@ -149,14 +149,15 @@ object_id_type asset_create_evaluator::do_apply( const asset_create_operation& o
         });
     }
 
+   auto next_asset_id = db().get_index_type<asset_index>().get_next_id();
+
    asset_bitasset_data_id_type bit_asset_id;
    if( op.bitasset_opts.valid() )
       bit_asset_id = db().create<asset_bitasset_data_object>( [&]( asset_bitasset_data_object& a ) {
             a.options = *op.bitasset_opts;
             a.is_prediction_market = op.is_prediction_market;
+            a.asset_id = next_asset_id;
          }).id;
-
-   auto next_asset_id = db().get_index_type<asset_index>().get_next_id();
 
    const asset_object& new_asset =
      db().create<asset_object>( [&]( asset_object& a ) {
@@ -297,17 +298,18 @@ object_id_type lottery_asset_create_evaluator::do_apply( const lottery_asset_cre
          });
       }
 
+   auto next_asset_id = db().get_index_type<asset_index>().get_next_id();
+
    asset_bitasset_data_id_type bit_asset_id;
    if( op.bitasset_opts.valid() )
       bit_asset_id = db().create<asset_bitasset_data_object>( [&op,next_asset_id]( asset_bitasset_data_object& a ) {
             a.options = *op.bitasset_opts;
             a.is_prediction_market = op.is_prediction_market;
+            a.asset_id = next_asset_id;
          }).id;
 
-   auto next_asset_id = db().get_index_type<asset_index>().get_next_id();
-
    const asset_object& new_asset =
-     db().create<asset_object>( [&op,next_asset_id,&dyn_asset,bit_asset_id]( asset_object& a ) {
+     db().create<asset_object>( [&op,next_asset_id,&dyn_asset,bit_asset_id,this]( asset_object& a ) {
          a.issuer = op.issuer;
          a.symbol = op.symbol;
          a.precision = op.precision;
@@ -481,6 +483,20 @@ void_result asset_update_evaluator::do_apply(const asset_update_operation& o)
            itr != idx.end() && itr->settlement_asset_id() == o.asset_to_update;
            itr = idx.lower_bound(o.asset_to_update) )
          d.cancel_order(*itr);
+   }
+
+   // For market-issued assets, if core change rate changed, update flag in bitasset data
+   if( asset_to_update->is_market_issued()
+          && asset_to_update->options.core_exchange_rate != o.new_options.core_exchange_rate )
+   {
+      const auto& bitasset = asset_to_update->bitasset_data(d);
+      if( !bitasset.asset_cer_updated )
+      {
+         d.modify( bitasset, [](asset_bitasset_data_object& b)
+         {
+            b.asset_cer_updated = true;
+         });
+      }
    }
 
    d.modify(*asset_to_update, [&o](asset_object& a) {

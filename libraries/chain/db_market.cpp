@@ -426,14 +426,18 @@ bool database::fill_order(const force_settlement_object& settle, const asset& pa
  *
  *  @return true if a margin call was executed.
  */
-bool database::check_call_orders(const asset_object& mia, bool enable_black_swan)
+bool database::check_call_orders( const asset_object& mia, bool enable_black_swan, bool for_new_limit_order,
+                                  const asset_bitasset_data_object* bitasset_ptr )
 { try {
+    static const auto& dyn_prop = get_dynamic_global_properties();
     if( !mia.is_market_issued() ) return false;
+    auto maint_time = dyn_prop.next_maintenance_time;
 
-    if( check_for_blackswan( mia, enable_black_swan ) ) 
+    const asset_bitasset_data_object& bitasset = ( bitasset_ptr ? *bitasset_ptr : mia.bitasset_data(*this) );
+
+    if( check_for_blackswan( mia, enable_black_swan, &bitasset ) )
        return false;
 
-    const asset_bitasset_data_object& bitasset = mia.bitasset_data(*this);
     if( bitasset.is_prediction_market ) return false;
     if( bitasset.current_feed.settlement_price.is_null() ) return false;
 
@@ -464,7 +468,13 @@ bool database::check_call_orders(const asset_object& mia, bool enable_black_swan
     bool filled_limit = false;
     bool margin_called = false;
 
-    while( !check_for_blackswan( mia, enable_black_swan ) && call_itr != call_end )
+    auto head_time = head_block_time();
+    auto head_num = head_block_num();
+
+    bool before_hardfork_615 = ( head_time < HARDFORK_615_TIME );
+    bool after_hardfork_436 = ( head_time > HARDFORK_436_TIME );
+
+    while( !check_for_blackswan( mia, enable_black_swan, &bitasset ) && call_itr != call_end )
     {
        bool  filled_call      = false;
        price match_price;
@@ -506,7 +516,8 @@ bool database::check_call_orders(const asset_object& mia, bool enable_black_swan
 
        if( usd_to_buy * match_price > call_itr->get_collateral() )
        {
-          elog( "black swan detected" ); 
+          elog( "black swan detected on asset ${symbol} (${id}) at block ${b}",
+                ("id",mia.id)("symbol",mia.symbol)("b",head_num) );
           edump((enable_black_swan));
           FC_ASSERT( enable_black_swan );
           globally_settle_asset(mia, bitasset.current_feed.settlement_price );
