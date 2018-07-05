@@ -893,7 +893,7 @@ void database::init_genesis(const genesis_state_type& genesis_state)
    });
 
    // Set active witnesses
-   modify(get_global_properties(), [&](global_property_object& p) {
+   modify(get_global_properties(), [&genesis_state](global_property_object& p) {
       for( uint32_t i = 1; i <= genesis_state.initial_active_witnesses; ++i )
       {
          p.active_witnesses.insert(witness_id_type(i));
@@ -901,10 +901,7 @@ void database::init_genesis(const genesis_state_type& genesis_state)
    });
 
    // Initialize witness schedule
-#ifndef NDEBUG
-   const witness_schedule_object& wso =
-#endif
-   create<witness_schedule_object>([&](witness_schedule_object& _wso)
+   _p_witness_schedule_obj = & create<witness_schedule_object>([this](witness_schedule_object& _wso)
    {
       // for scheduled
       memset(_wso.rng_seed.begin(), 0, _wso.rng_seed.size());
@@ -928,19 +925,13 @@ void database::init_genesis(const genesis_state_type& genesis_state)
       for( const witness_id_type& wid : get_global_properties().active_witnesses )
          _wso.current_shuffled_witnesses.push_back( wid );
    });
-   assert( wso.id == witness_schedule_id_type() );
+   FC_ASSERT( _p_witness_schedule_obj->id == witness_schedule_id_type() );
 
    // Enable fees
    modify(get_global_properties(), [&genesis_state](global_property_object& p) {
       p.parameters.current_fees = genesis_state.initial_parameters.current_fees;
    });
 
-   // Create witness scheduler
-   //create<witness_schedule_object>([&]( witness_schedule_object& wso )
-   //{
-   //   for( const witness_id_type& wid : get_global_properties().active_witnesses )
-   //      wso.current_shuffled_witnesses.push_back( wid );
-   //});
 
    // Create FBA counters
    create<fba_accumulator_object>([&]( fba_accumulator_object& acc )

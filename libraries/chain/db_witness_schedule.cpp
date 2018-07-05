@@ -38,14 +38,14 @@ witness_id_type database::get_scheduled_witness( uint32_t slot_num )const
    if (gpo.parameters.witness_schedule_algorithm == GRAPHENE_WITNESS_SHUFFLED_ALGORITHM)
    {
        const dynamic_global_property_object& dpo = get_dynamic_global_properties();
-       const witness_schedule_object& wso = witness_schedule_id_type()(*this);
+       const witness_schedule_object& wso = get_witness_schedule_object();;
        uint64_t current_aslot = dpo.current_aslot + slot_num;
        return wso.current_shuffled_witnesses[ current_aslot % wso.current_shuffled_witnesses.size() ];
    }
    if (gpo.parameters.witness_schedule_algorithm == GRAPHENE_WITNESS_SCHEDULED_ALGORITHM &&
        slot_num != 0 )
    {
-       const witness_schedule_object& wso = witness_schedule_id_type()(*this);
+       const witness_schedule_object& wso = get_witness_schedule_object();;
        // ask the near scheduler who goes in the given slot
        bool slot_is_near = wso.scheduler.get_slot(slot_num-1, wid);
        if(! slot_is_near)
@@ -113,7 +113,7 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when)const
 
 void database::update_witness_schedule()
 {
-   const witness_schedule_object& wso = witness_schedule_id_type()(*this);
+   const witness_schedule_object& wso = get_witness_schedule_object();
    const global_property_object& gpo = get_global_properties();
 
    if( head_block_num() % gpo.active_witnesses.size() == 0 )
@@ -148,7 +148,7 @@ void database::update_witness_schedule()
 
 vector<witness_id_type> database::get_near_witness_schedule()const
 {
-   const witness_schedule_object& wso = witness_schedule_id_type()(*this);
+   const witness_schedule_object& wso = get_witness_schedule_object();
 
    vector<witness_id_type> result;
    result.reserve(wso.scheduler.size());
@@ -165,7 +165,7 @@ void database::update_witness_schedule(const signed_block& next_block)
 {
    auto start = fc::time_point::now();
    const global_property_object& gpo = get_global_properties();
-   const witness_schedule_object& wso = get(witness_schedule_id_type());
+   const witness_schedule_object& wso = get_witness_schedule_object();
    uint32_t schedule_needs_filled = gpo.active_witnesses.size();
    uint32_t schedule_slot = get_slot_at_time(next_block.timestamp);
 
@@ -252,7 +252,7 @@ uint32_t database::witness_participation_rate()const
     }
     if (gpo.parameters.witness_schedule_algorithm == GRAPHENE_WITNESS_SCHEDULED_ALGORITHM)
     {
-       const witness_schedule_object& wso = get(witness_schedule_id_type());
+       const witness_schedule_object& wso = get_witness_schedule_object();
        return uint64_t(GRAPHENE_100_PERCENT) * wso.recent_slots_filled.popcount() / 128;
     }
     return 0;

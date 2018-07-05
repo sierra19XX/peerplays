@@ -141,4 +141,9 @@ const std::vector<uint32_t> database::get_winner_numbers( asset_id_type for_asse
    return result;
 }
 
+const witness_schedule_object& database::get_witness_schedule_object()const
+{
+   return *_p_witness_schedule_obj;
+}
+
 } }
