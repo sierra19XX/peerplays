@@ -630,8 +630,8 @@ void database::_apply_block( const signed_block& next_block )
    clear_expired_transactions();
    clear_expired_proposals();
    clear_expired_orders();
-   update_expired_feeds();
-   update_core_exchange_rates();
+   update_expired_feeds();       // this will update expired feeds and some core exchange rates
+   update_core_exchange_rates(); // this will update remaining core exchange rates
    update_withdraw_permissions();
    update_tournaments();
    update_betting_markets(next_block.timestamp);
