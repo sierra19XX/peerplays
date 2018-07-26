@@ -133,34 +133,36 @@ void asset_create_evaluator::pay_fee()
 
 object_id_type asset_create_evaluator::do_apply( const asset_create_operation& op )
 { try {
+   database& d = db();
+
    // includes changes from bitshares. (https://github.com/bitshares/bitshares-core/issues/429)
    bool hf_429 = fee_is_odd && db().head_block_time() > HARDFORK_CORE_429_TIME;
 
    const asset_dynamic_data_object& dyn_asset =
-      db().create<asset_dynamic_data_object>( [hf_429,this]( asset_dynamic_data_object& a ) {
+      d.create<asset_dynamic_data_object>( [hf_429,this]( asset_dynamic_data_object& a ) {
          a.current_supply = 0;
          a.fee_pool = core_fee_paid - (hf_429 ? 1 : 0);
       });
     if( fee_is_odd && !hf_429 )
     {
-        const auto& core_dd = db().get_core_asset().dynamic_data( db() );
-        db().modify( core_dd, []( asset_dynamic_data_object& dd ) {
+        const auto& core_dd = d.get_core_asset().dynamic_data( d );
+        d.modify( core_dd, []( asset_dynamic_data_object& dd ) {
             dd.current_supply++;
         });
     }
 
-   auto next_asset_id = db().get_index_type<asset_index>().get_next_id();
+   auto next_asset_id = d.get_index_type<asset_index>().get_next_id();
 
    asset_bitasset_data_id_type bit_asset_id;
    if( op.bitasset_opts.valid() )
-      bit_asset_id = db().create<asset_bitasset_data_object>( [&]( asset_bitasset_data_object& a ) {
+      bit_asset_id = d.create<asset_bitasset_data_object>( [&]( asset_bitasset_data_object& a ) {
             a.options = *op.bitasset_opts;
             a.is_prediction_market = op.is_prediction_market;
             a.asset_id = next_asset_id;
          }).id;
 
    const asset_object& new_asset =
-     db().create<asset_object>( [&]( asset_object& a ) {
+     d.create<asset_object>( [&]( asset_object& a ) {
          a.issuer = op.issuer;
          a.symbol = op.symbol;
          a.precision = op.precision;
@@ -176,7 +178,7 @@ object_id_type asset_create_evaluator::do_apply( const asset_create_operation& o
          if( op.bitasset_opts.valid() )
             a.bitasset_data_id = bit_asset_id;
       });
-   assert( new_asset.id == next_asset_id );
+   FC_ASSERT( new_asset.id == next_asset_id );
 
    return new_asset.id;
 } FC_CAPTURE_AND_RETHROW( (op) ) }
@@ -282,34 +284,36 @@ void lottery_asset_create_evaluator::pay_fee()
 
 object_id_type lottery_asset_create_evaluator::do_apply( const lottery_asset_create_operation& op )
 { try {
+   database& d = db();
+
    // includes changes from bitshares. (https://github.com/bitshares/bitshares-core/issues/429)
-   bool hf_429 = fee_is_odd && db().head_block_time() > HARDFORK_CORE_429_TIME;
+   bool hf_429 = fee_is_odd && d.head_block_time() > HARDFORK_CORE_429_TIME;
 
    const asset_dynamic_data_object& dyn_asset =
-      db().create<asset_dynamic_data_object>( [&]( asset_dynamic_data_object& a ) {
+      d.create<asset_dynamic_data_object>( [&]( asset_dynamic_data_object& a ) {
          a.current_supply = 0;
          a.fee_pool = core_fee_paid - (hf_429 ? 1 : 0);
       });
       if( fee_is_odd && !hf_429 )
       {
-         const auto& core_dd = db().get<asset_object>( asset_id_type() ).dynamic_data( db() );
-         db().modify( core_dd, [=]( asset_dynamic_data_object& dd ) {
+         const auto& core_dd = d.get<asset_object>( asset_id_type() ).dynamic_data( db() );
+         d.modify( core_dd, [=]( asset_dynamic_data_object& dd ) {
             dd.current_supply++;
          });
       }
 
-   auto next_asset_id = db().get_index_type<asset_index>().get_next_id();
+   auto next_asset_id = d.get_index_type<asset_index>().get_next_id();
 
    asset_bitasset_data_id_type bit_asset_id;
    if( op.bitasset_opts.valid() )
-      bit_asset_id = db().create<asset_bitasset_data_object>( [&op,next_asset_id]( asset_bitasset_data_object& a ) {
+      bit_asset_id = d.create<asset_bitasset_data_object>( [&op,next_asset_id]( asset_bitasset_data_object& a ) {
             a.options = *op.bitasset_opts;
             a.is_prediction_market = op.is_prediction_market;
             a.asset_id = next_asset_id;
          }).id;
 
    const asset_object& new_asset =
-     db().create<asset_object>( [&op,next_asset_id,&dyn_asset,bit_asset_id,this]( asset_object& a ) {
+     d.create<asset_object>( [&op,next_asset_id,&dyn_asset,bit_asset_id,&d]( asset_object& a ) {
          a.issuer = op.issuer;
          a.symbol = op.symbol;
          a.precision = op.precision;
@@ -318,7 +322,7 @@ object_id_type lottery_asset_create_evaluator::do_apply( const lottery_asset_cre
          a.lottery_options = op.extensions;
          //a.lottery_options->balance = asset( 0, a.lottery_options->ticket_price.asset_id );
          a.lottery_options->owner = a.id;
-         db().create<lottery_balance_object>([&](lottery_balance_object& lbo) {
+         d.create<lottery_balance_object>([&a](lottery_balance_object& lbo) {
             lbo.lottery_id = a.id;
          });
          if( a.options.core_exchange_rate.base.asset_id.instance.value == 0 )
@@ -329,7 +333,7 @@ object_id_type lottery_asset_create_evaluator::do_apply( const lottery_asset_cre
          if( op.bitasset_opts.valid() )
             a.bitasset_data_id = bit_asset_id;
       });
-   FC_ASSERT( new_asset.id == next_asset_id );
+   FC_ASSERT( new_asset.id == next_asset_id, "Unexpected object database error, object id mismatch" );
 
    return new_asset.id;
 } FC_CAPTURE_AND_RETHROW( (op) ) }
