@@ -33,7 +33,8 @@
 #include <fc/safe.hpp>
 #include <fc/container/flat.hpp>
 #include <fc/string.hpp>
-#include <fc/io/raw.hpp>
+#include <fc/io/datastream.hpp>
+#include <fc/io/raw_fwd.hpp>
 #include <fc/uint128.hpp>
 #include <fc/static_variant.hpp>
 #include <fc/smart_ref_fwd.hpp>
@@ -45,6 +46,31 @@
 #include <graphene/chain/protocol/address.hpp>
 #include <graphene/db/object_id.hpp>
 #include <graphene/chain/protocol/config.hpp>
+
+
+#define GRAPHENE_EXTERNAL_SERIALIZATION(ext, type) \
+namespace fc { \
+   ext template void from_variant( const variant& v, type& vo, uint32_t max_depth ); \
+   ext template void to_variant( const type& v, variant& vo, uint32_t max_depth ); \
+namespace raw { \
+   ext template void pack< datastream<size_t>, type >( datastream<size_t>& s, const type& tx, uint32_t _max_depth=FC_PACK_MAX_DEPTH ); \
+   ext template void pack< datastream<char*>, type >( datastream<char*>& s, const type& tx, uint32_t _max_depth=FC_PACK_MAX_DEPTH ); \
+   ext template void unpack< datastream<const char*>, type >( datastream<const char*>& s, type& tx, uint32_t _max_depth=FC_PACK_MAX_DEPTH ); \
+} } // fc::raw
+
+#define FC_REFLECT_DERIVED_NO_TYPENAME( TYPE, INHERITS, MEMBERS ) \
+namespace fc { \
+template<> struct reflector<TYPE> {\
+    typedef TYPE type; \
+    typedef fc::true_type  is_defined; \
+    typedef fc::false_type is_enum; \
+    enum  member_count_enum {  \
+      local_member_count = 0  BOOST_PP_SEQ_FOR_EACH( FC_REFLECT_MEMBER_COUNT, +, MEMBERS ),\
+      total_member_count = local_member_count BOOST_PP_SEQ_FOR_EACH( FC_REFLECT_BASE_MEMBER_COUNT, +, INHERITS )\
+    }; \
+    FC_REFLECT_DERIVED_IMPL_INLINE( TYPE, INHERITS, MEMBERS ) \
+}; \
+} // fc
 
 namespace graphene { namespace chain {
    using namespace graphene::db;

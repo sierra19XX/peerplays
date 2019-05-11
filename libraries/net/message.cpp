@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Cryptonomex, Inc., and contributors.
+ * Copyright (c) 2019 BitShares Blockchain Foundation, and contributors.
  *
  * The MIT License
  *
@@ -21,44 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <graphene/chain/protocol/transfer.hpp>
 #include <fc/io/raw.hpp>
 
-namespace graphene { namespace chain {
+#include <graphene/net/message.hpp>
 
-share_type transfer_operation::calculate_fee( const fee_parameters_type& schedule )const
-{
-   share_type core_fee_required = schedule.fee;
-   if( memo )
-      core_fee_required += calculate_data_fee( fc::raw::pack_size(memo), schedule.price_per_kbyte );
-   return core_fee_required;
-}
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::net::message_header, BOOST_PP_SEQ_NIL, (size)(msg_type) )
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::net::message, (graphene::net::message_header), (data) )
 
-
-void transfer_operation::validate()const
-{
-   FC_ASSERT( fee.amount >= 0 );
-   FC_ASSERT( from != to );
-   FC_ASSERT( amount.amount > 0 );
-}
-
-
-
-share_type override_transfer_operation::calculate_fee( const fee_parameters_type& schedule )const
-{
-   share_type core_fee_required = schedule.fee;
-   if( memo )
-      core_fee_required += calculate_data_fee( fc::raw::pack_size(memo), schedule.price_per_kbyte );
-   return core_fee_required;
-}
-
-
-void override_transfer_operation::validate()const
-{
-   FC_ASSERT( fee.amount >= 0 );
-   FC_ASSERT( from != to );
-   FC_ASSERT( amount.amount > 0 );
-   FC_ASSERT( issuer != from );
-}
-
-} } // graphene::chain
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::net::message_header)
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::net::message)

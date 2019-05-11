@@ -24,6 +24,9 @@
 #include <graphene/chain/protocol/account.hpp>
 #include <graphene/chain/hardfork.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <graphene/chain/protocol/account.hpp>
+
+#include <fc/io/raw.hpp>
 namespace graphene { namespace chain {
 
 /**

@@ -27,6 +27,7 @@
 #include <graphene/chain/config.hpp>
 #include <graphene/chain/protocol/fee_schedule.hpp>
 
+#include <fc/io/raw.hpp>
 #include <fc/thread/thread.hpp>
 
 #include <boost/scope_exit.hpp>

@@ -5825,10 +5825,10 @@ std::vector<matched_bet_object> wallet_api::get_all_matched_bets_for_bettor(acco
 signed_block_with_info::signed_block_with_info( const signed_block& block )
    : signed_block( block )
 {
-   block_id = id();
-   signing_key = signee();
-   transaction_ids.reserve( transactions.size() );
-   for( const processed_transaction& tx : transactions )
+   block_id = _block.id();
+   signing_key = _block.signee();
+   transaction_ids.reserve( _block.transactions.size() );
+   for( const processed_transaction& tx : _block.transactions )
       transaction_ids.push_back( tx.id() );
 }
 

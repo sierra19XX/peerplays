@@ -23,6 +23,7 @@
  */
 #include <graphene/chain/protocol/withdraw_permission.hpp>
 
+#include <fc/io/raw.hpp>
 namespace graphene { namespace chain {
 
 void withdraw_permission_update_operation::validate()const

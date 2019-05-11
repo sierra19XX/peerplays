@@ -23,7 +23,9 @@
  */
 #include <graphene/chain/protocol/asset_ops.hpp>
 #include <graphene/chain/database.hpp>
+#include <fc/io/raw.hpp>
 
+#include <locale>
 namespace graphene { namespace chain {
 
 /**

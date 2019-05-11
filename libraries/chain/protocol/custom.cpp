@@ -23,6 +23,7 @@
  */
 #include <graphene/chain/protocol/custom.hpp>
 
+#include <fc/io/raw.hpp>
 namespace graphene { namespace chain {
 
 void custom_operation::validate()const

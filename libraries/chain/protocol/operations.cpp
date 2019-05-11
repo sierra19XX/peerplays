@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 #include <graphene/chain/protocol/operations.hpp>
+#include <graphene/chain/protocol/fee_schedule.hpp>
 
 namespace graphene { namespace chain {
 

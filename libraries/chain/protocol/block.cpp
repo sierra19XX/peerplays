@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 #include <graphene/chain/protocol/block.hpp>
+#include <graphene/chain/protocol/fee_schedule.hpp>
 #include <fc/io/raw.hpp>
 #include <fc/bitutil.hpp>
 #include <algorithm>
@@ -90,3 +91,7 @@ namespace graphene { namespace chain {
    }
 
 } }
+
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::protocol::block_header)
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::protocol::signed_block_header)
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::protocol::signed_block)
