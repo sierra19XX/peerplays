@@ -63,8 +63,8 @@ typedef generic_index< special_authority_object, special_authority_multi_index_t
 
 } } // graphene::chain
 
-FC_REFLECT_DERIVED(
-   graphene::chain::special_authority_object,
-   (graphene::db::object),
-   (account)
-)
+MAP_OBJECT_ID_TO_TYPE(graphene::chain::special_authority_object)
+
+FC_REFLECT_TYPENAME( graphene::chain::special_authority_object )
+
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::special_authority_object )

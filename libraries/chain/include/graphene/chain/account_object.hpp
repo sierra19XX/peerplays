@@ -24,6 +24,11 @@
 #pragma once
 #include <graphene/chain/protocol/operations.hpp>
 #include <graphene/db/generic_index.hpp>
+
+#include <graphene/chain/protocol/types.hpp>
+#include <graphene/db/generic_index.hpp>
+#include <graphene/chain/protocol/account.hpp>
+
 #include <boost/multi_index/composite_key.hpp>
 
 namespace graphene { namespace chain {
@@ -400,7 +405,7 @@ namespace graphene { namespace chain {
     */
    typedef generic_index<account_balance_object, account_balance_object_multi_index_type> account_balance_index;
 
-   struct by_name{};
+   struct by_name;
 
    /**
     * @ingroup object_index
@@ -463,35 +468,16 @@ namespace graphene { namespace chain {
 
 }}
 
-FC_REFLECT_DERIVED( graphene::chain::account_object,
-                    (graphene::db::object),
-                    (membership_expiration_date)(registrar)(referrer)(lifetime_referrer)
-                    (network_fee_percentage)(lifetime_referrer_fee_percentage)(referrer_rewards_percentage)
-                    (name)(owner)(active)(options)(statistics)(whitelisting_accounts)(blacklisting_accounts)
-                    (whitelisted_accounts)(blacklisted_accounts)
-                    (cashback_vb)
-                    (owner_special_authority)(active_special_authority)
-                    (top_n_control_flags)
-                    (allowed_assets)(affiliate_distributions)
-                    )
+MAP_OBJECT_ID_TO_TYPE(graphene::chain::account_object)
+MAP_OBJECT_ID_TO_TYPE(graphene::chain::account_balance_object)
+MAP_OBJECT_ID_TO_TYPE(graphene::chain::account_statistics_object)
 
-FC_REFLECT_DERIVED( graphene::chain::account_balance_object,
-                    (graphene::db::object),
-                    (owner)(asset_type)(balance) )
+FC_REFLECT_TYPENAME( graphene::chain::account_object )
+FC_REFLECT_TYPENAME( graphene::chain::account_balance_object )
+FC_REFLECT_TYPENAME( graphene::chain::account_statistics_object )
+FC_REFLECT_TYPENAME( graphene::chain::pending_dividend_payout_balance_for_holder_object )
 
-FC_REFLECT_DERIVED( graphene::chain::account_statistics_object,
-                    (graphene::chain::object),
-                    (owner)
-                    (most_recent_op)
-                    (total_ops)(removed_ops)
-                    (total_core_in_orders)
-                    (lifetime_fees_paid)
-                    (pending_fees)(pending_vested_fees)
-                    (last_vote_time)
-                  )
-
-FC_REFLECT_DERIVED( graphene::chain::pending_dividend_payout_balance_for_holder_object,
-                    (graphene::db::object),
-                    (owner)(dividend_holder_asset_type)(dividend_payout_asset_type)(pending_balance) )
-
-
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::account_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::account_balance_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::account_statistics_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::pending_dividend_payout_balance_for_holder_object )

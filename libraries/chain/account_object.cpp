@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  */
 #include <graphene/chain/account_object.hpp>
-#include <graphene/chain/asset_object.hpp>
 #include <graphene/chain/database.hpp>
-#include <graphene/chain/hardfork.hpp>
+
+#include <fc/io/raw.hpp>
 #include <fc/uint128.hpp>
 
 namespace graphene { namespace chain {
@@ -268,3 +268,40 @@ void account_referrer_index::object_modified( const object& after  )
 }
 
 } } // graphene::chain
+
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::account_object,
+                    (graphene::db::object),
+                    (membership_expiration_date)(registrar)(referrer)(lifetime_referrer)
+                    (network_fee_percentage)(lifetime_referrer_fee_percentage)(referrer_rewards_percentage)
+                    (name)(owner)(active)(options)(statistics)(whitelisting_accounts)(blacklisting_accounts)
+                    (whitelisted_accounts)(blacklisted_accounts)
+                    (cashback_vb)
+                    (owner_special_authority)(active_special_authority)
+                    (top_n_control_flags)
+                    (allowed_assets)(affiliate_distributions)
+                    )
+
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::account_balance_object,
+                    (graphene::db::object),
+                    (owner)(asset_type)(balance) )
+
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::account_statistics_object,
+                    (graphene::chain::object),
+                    (owner)
+                    (most_recent_op)
+                    (total_ops)(removed_ops)
+                    (total_core_in_orders)
+                    (lifetime_fees_paid)
+                    (pending_fees)(pending_vested_fees)
+                    (last_vote_time)
+                  )
+
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::pending_dividend_payout_balance_for_holder_object,
+                    (graphene::db::object),
+                    (owner)(dividend_holder_asset_type)(dividend_payout_asset_type)(pending_balance) )
+
+
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::account_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::account_balance_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::account_statistics_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::pending_dividend_payout_balance_for_holder_object )

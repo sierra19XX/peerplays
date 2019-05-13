@@ -27,16 +27,17 @@
 #include <graphene/db/object.hpp>
 #include <graphene/db/generic_index.hpp>
 
+#include <boost/multi_index/composite_key.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/identity.hpp>
+
 #include <fc/static_variant.hpp>
 #include <fc/uint128.hpp>
 
 #include <algorithm>
-#include <boost/multi_index/composite_key.hpp>
 
 namespace graphene { namespace chain {
    using namespace graphene::db;
-
-   class vesting_balance_object;
 
    struct vesting_policy_context
    {
@@ -205,24 +206,16 @@ namespace graphene { namespace chain {
 
 } } // graphene::chain
 
-FC_REFLECT(graphene::chain::linear_vesting_policy,
-           (begin_timestamp)
-           (vesting_cliff_seconds)
-           (vesting_duration_seconds)
-           (begin_balance)
-          )
+FC_REFLECT_TYPENAME(graphene::chain::linear_vesting_policy)
 
-FC_REFLECT(graphene::chain::cdd_vesting_policy,
-           (vesting_seconds)
-           (start_claim)
-           (coin_seconds_earned)
-           (coin_seconds_earned_last_update)
-          )
+FC_REFLECT_TYPENAME(graphene::chain::cdd_vesting_policy)
 
 FC_REFLECT_TYPENAME( graphene::chain::vesting_policy )
 
-FC_REFLECT_DERIVED(graphene::chain::vesting_balance_object, (graphene::db::object),
-                   (owner)
-                   (balance)
-                   (policy)
-                  )
+FC_REFLECT_TYPENAME(graphene::chain::vesting_balance_object)
+
+FC_REFLECT_ENUM( graphene::chain::vesting_balance_type, (unspecified)(cashback)(worker)(witness)(market_fee_sharing) )
+
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::linear_vesting_policy )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::cdd_vesting_policy )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::vesting_balance_object )

@@ -86,13 +86,8 @@ FC_REFLECT( graphene::chain::witness_scheduler,
             (_schedule)
             (_lame_duck)
             )
-FC_REFLECT_DERIVED(
-   graphene::chain::witness_schedule_object,
-   (graphene::db::object),
-   (scheduler)
-   (last_scheduling_block)
-   (slots_since_genesis)
-   (rng_seed)
-   (recent_slots_filled)
-   (current_shuffled_witnesses)
-)
+
+FC_REFLECT_TYPENAME( graphene::chain::witness_schedule_object )
+
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::witness_schedule_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::witness_scheduler )

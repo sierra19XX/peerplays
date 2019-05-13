@@ -22,12 +22,10 @@
  * THE SOFTWARE.
  */
 #pragma once
-#include <fc/io/raw.hpp>
 
 #include <graphene/chain/protocol/transaction.hpp>
 #include <graphene/db/index.hpp>
 #include <graphene/db/generic_index.hpp>
-#include <fc/uint128.hpp>
 
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/member.hpp>
@@ -71,4 +69,8 @@ namespace graphene { namespace chain {
    typedef generic_index<transaction_object, transaction_multi_index_type> transaction_index;
 } }
 
-FC_REFLECT_DERIVED( graphene::chain::transaction_object, (graphene::db::object), (trx)(trx_id) )
+MAP_OBJECT_ID_TO_TYPE(graphene::chain::transaction_object)
+
+FC_REFLECT_TYPENAME( graphene::chain::transaction_object )
+
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::transaction_object )

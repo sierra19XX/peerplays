@@ -466,6 +466,18 @@ void betting_market_object::on_canceled_event(database& db)
 
 } } // graphene::chain
 
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::betting_market_rules_object, (graphene::db::object), (name)(description) )
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::betting_market_group_object, (graphene::db::object), (description) )
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::betting_market_object, (graphene::db::object), (group_id) )
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::bet_object, (graphene::db::object), (bettor_id)(betting_market_id)(amount_to_bet)(backer_multiplier)(back_or_lay)(end_of_delay) )
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::betting_market_position_object, (graphene::db::object), (bettor_id)(betting_market_id)(pay_if_payout_condition)(pay_if_not_payout_condition)(pay_if_canceled)(pay_if_not_canceled)(fees_collected) )
+
+GRAPHENE_EXTERNAL_SERIALIZATION( /* no extern */, graphene::chain::betting_market_rules_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( /* no extern */, graphene::chain::betting_market_group_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( /* no extern */, graphene::chain::betting_market_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( /* no extern */, graphene::chain::bet_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( /* no extern */, graphene::chain::betting_market_position_object )
+
 namespace fc { 
    // Manually reflect betting_market_object to variant to properly reflect "state"
    void to_variant(const graphene::chain::betting_market_object& event_obj, fc::variant& v)

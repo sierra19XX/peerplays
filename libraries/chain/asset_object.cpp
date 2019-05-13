@@ -24,9 +24,8 @@
 #include <graphene/chain/asset_object.hpp>
 #include <graphene/chain/database.hpp>
 
+#include <fc/io/raw.hpp>
 #include <fc/uint128.hpp>
-
-#include <cmath>
 
 using namespace graphene::chain;
 
@@ -291,3 +290,66 @@ void sweeps_vesting_balance_object::adjust_balance( const asset& delta )
    FC_ASSERT( delta.asset_id == asset_id );
    balance += delta.amount.value;
 }
+
+
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::asset_dynamic_data_object, (graphene::db::object),
+                    (current_supply)(sweeps_tickets_sold)(confidential_supply)(accumulated_fees)(fee_pool) )
+
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::asset_bitasset_data_object, (graphene::db::object),
+                    (feeds)
+                    (current_feed)
+                    (current_feed_publication_time)
+                    (options)
+                    (force_settled_volume)
+                    (is_prediction_market)
+                    (settlement_price)
+                    (settlement_fund)
+                  )
+
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::asset_dividend_data_object, (graphene::db::object),
+                    (options)
+                    (last_scheduled_payout_time)
+                    (last_payout_time )
+                    (last_scheduled_distribution_time)
+                    (last_distribution_time)
+                    (dividend_distribution_account)
+                  )
+
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::total_distributed_dividend_balance_object, (graphene::db::object),
+                    (dividend_holder_asset_type)
+                    (dividend_payout_asset_type)
+                    (balance_at_last_maintenance_interval)
+                  )
+
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::asset_object, (graphene::db::object),
+                    (symbol)
+                    (precision)
+                    (issuer)
+                    (options)
+                    (lottery_options)
+                    (dynamic_asset_data_id)
+                    (bitasset_data_id)
+                    (buyback_account)
+                    (dividend_data_id)
+                  )
+
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::lottery_balance_object, (graphene::db::object),
+                    (lottery_id)
+                    (balance)
+                  )
+
+FC_REFLECT_DERIVED_NO_TYPENAME( graphene::chain::sweeps_vesting_balance_object, (graphene::db::object),
+                    (owner)
+                    (balance)
+                    (asset_id)
+                    (last_claim_date)
+                  )
+
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::asset_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::asset_bitasset_data_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::asset_dynamic_data_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::asset_dividend_data_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::lottery_balance_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::sweeps_vesting_balance_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::total_distributed_dividend_balance_object )
+

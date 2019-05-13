@@ -25,6 +25,10 @@
 #include <graphene/chain/protocol/authority.hpp>
 #include <graphene/db/generic_index.hpp>
 #include <boost/multi_index/composite_key.hpp>
+#include <graphene/chain/protocol/asset.hpp>
+#include <graphene/db/generic_index.hpp>
+
+#include <boost/multi_index/composite_key.hpp>
 
 namespace graphene { namespace chain {
 
@@ -105,12 +109,8 @@ namespace graphene { namespace chain {
 
 } } // graphene::chain
 
-FC_REFLECT_DERIVED( graphene::chain::withdraw_permission_object, (graphene::db::object),
-                    (withdraw_from_account)
-                    (authorized_account)
-                    (withdrawal_limit)
-                    (withdrawal_period_sec)
-                    (period_start_time)
-                    (expiration)
-                    (claimed_this_period)
-                 )
+MAP_OBJECT_ID_TO_TYPE(graphene::chain::withdraw_permission_object)
+
+FC_REFLECT_TYPENAME( graphene::chain::withdraw_permission_object )
+
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::withdraw_permission_object )

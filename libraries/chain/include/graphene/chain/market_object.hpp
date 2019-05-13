@@ -205,15 +205,14 @@ typedef generic_index<force_settlement_object, force_settlement_object_multi_ind
 
 } } // graphene::chain
 
-FC_REFLECT_DERIVED( graphene::chain::limit_order_object,
-                    (graphene::db::object),
-                    (expiration)(seller)(for_sale)(sell_price)(deferred_fee)
-                  )
+MAP_OBJECT_ID_TO_TYPE(graphene::chain::limit_order_object)
+MAP_OBJECT_ID_TO_TYPE(graphene::chain::call_order_object)
+MAP_OBJECT_ID_TO_TYPE(graphene::chain::force_settlement_object)
 
-FC_REFLECT_DERIVED( graphene::chain::call_order_object, (graphene::db::object),
-                    (borrower)(collateral)(debt)(call_price) )
+FC_REFLECT_TYPENAME( graphene::chain::limit_order_object )
+FC_REFLECT_TYPENAME( graphene::chain::call_order_object )
+FC_REFLECT_TYPENAME( graphene::chain::force_settlement_object )
 
-FC_REFLECT_DERIVED( graphene::chain::force_settlement_object,
-                    (graphene::db::object),
-                    (owner)(balance)(settlement_date)
-                  )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::limit_order_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::call_order_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::force_settlement_object )

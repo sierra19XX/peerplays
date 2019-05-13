@@ -29,8 +29,6 @@
 namespace graphene { namespace chain {
    using namespace graphene::db;
 
-   class witness_object;
-
    class witness_object : public abstract_object<witness_object>
    {
       public:
@@ -72,16 +70,8 @@ namespace graphene { namespace chain {
    using witness_index = generic_index<witness_object, witness_multi_index_type>;
 } } // graphene::chain
 
-FC_REFLECT_DERIVED( graphene::chain::witness_object, (graphene::db::object),
-                    (witness_account)
-                    (last_aslot)
-                    (signing_key)
-                    (next_secret_hash)
-                    (previous_secret)
-                    (pay_vb)
-                    (vote_id)
-                    (total_votes)
-                    (url) 
-                    (total_missed)
-                    (last_confirmed_block_num)
-                  )
+MAP_OBJECT_ID_TO_TYPE(graphene::chain::witness_object)
+
+FC_REFLECT_TYPENAME( graphene::chain::witness_object )
+
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::witness_object )
