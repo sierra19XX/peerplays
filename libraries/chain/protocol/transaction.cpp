@@ -27,6 +27,8 @@
 #include <fc/bitutil.hpp>
 #include <fc/smart_ref_impl.hpp>
 #include <algorithm>
+#include <graphene/chain/protocol/transaction.hpp>
+#include <graphene/chain/protocol/block.hpp>
 
 namespace graphene { namespace chain {
 
@@ -385,6 +387,6 @@ void signed_transaction::verify_authority(
 
 } } // graphene::chain
 
-GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::protocol::transaction)
-GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::protocol::signed_transaction)
-GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::protocol::processed_transaction)
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::transaction)
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::signed_transaction)
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::processed_transaction)

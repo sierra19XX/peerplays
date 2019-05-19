@@ -23,6 +23,7 @@
  */
 #include <graphene/chain/protocol/operations.hpp>
 #include <graphene/chain/protocol/fee_schedule.hpp>
+#include <fc/io/raw.hpp>
 
 namespace graphene { namespace chain {
 
@@ -86,3 +87,5 @@ void operation_get_required_authorities( const operation& op,
 }
 
 } } // namespace graphene::chain
+
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::op_wrapper )

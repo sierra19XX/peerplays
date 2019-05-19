@@ -24,6 +24,7 @@
 #pragma once
 #include <graphene/chain/protocol/base.hpp>
 #include <graphene/chain/protocol/memo.hpp>
+#include <graphene/chain/protocol/asset.hpp>
 
 namespace graphene { namespace chain { 
    class database;
@@ -764,3 +765,34 @@ FC_REFLECT( graphene::chain::asset_reserve_operation,
 
 FC_REFLECT( graphene::chain::asset_fund_fee_pool_operation, (fee)(from_account)(asset_id)(amount)(extensions) );
 FC_REFLECT( graphene::chain::asset_dividend_distribution_operation, (fee)(dividend_asset_id)(account_id)(amounts)(extensions) );
+
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_options )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::bitasset_options )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::additional_asset_options )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_create_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_global_settle_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_settle_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_fund_fee_pool_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_claim_pool_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_claim_fees_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_update_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_update_issuer_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_update_bitasset_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_update_feed_producers_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_publish_feed_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_issue_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_reserve_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_create_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_global_settle_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_settle_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_settle_cancel_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_fund_fee_pool_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_claim_pool_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_claim_fees_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_update_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_update_issuer_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_update_bitasset_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_update_feed_producers_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_publish_feed_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_issue_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset_reserve_operation )

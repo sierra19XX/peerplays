@@ -23,6 +23,7 @@
  */
 
 #include <graphene/chain/protocol/authority.hpp>
+#include <fc/io/raw.hpp>
 
 namespace graphene { namespace chain {
 
@@ -36,3 +37,5 @@ void add_authority_accounts(
 }
 
 } } // graphene::chain
+
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::authority )

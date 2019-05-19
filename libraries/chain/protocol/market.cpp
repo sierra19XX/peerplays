@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 #include <graphene/chain/protocol/market.hpp>
+#include <fc/io/raw.hpp>
 
 namespace graphene { namespace chain {
 
@@ -46,3 +47,12 @@ void call_order_update_operation::validate()const
 } FC_CAPTURE_AND_RETHROW((*this)) }
 
 } } // graphene::chain
+
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::call_order_update_operation::options_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::limit_order_create_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::limit_order_cancel_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::call_order_update_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::limit_order_create_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::limit_order_cancel_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::call_order_update_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::fill_order_operation )

@@ -23,6 +23,7 @@
  */
 #pragma once
 #include <graphene/chain/protocol/base.hpp>
+#include <graphene/chain/protocol/asset.hpp>
 
 namespace graphene { namespace chain { 
 
@@ -166,8 +167,18 @@ FC_REFLECT( graphene::chain::call_order_update_operation::fee_parameters_type, (
 /// THIS IS THE ONLY VIRTUAL OPERATION THUS FAR... 
 FC_REFLECT( graphene::chain::fill_order_operation::fee_parameters_type,  )
 
-
 FC_REFLECT( graphene::chain::limit_order_create_operation,(fee)(seller)(amount_to_sell)(min_to_receive)(expiration)(fill_or_kill)(extensions))
 FC_REFLECT( graphene::chain::limit_order_cancel_operation,(fee)(fee_paying_account)(order)(extensions) )
 FC_REFLECT( graphene::chain::call_order_update_operation, (fee)(funding_account)(delta_collateral)(delta_debt)(extensions) )
 FC_REFLECT( graphene::chain::fill_order_operation, (fee)(order_id)(account_id)(pays)(receives) )
+
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::call_order_update_operation::options_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::limit_order_create_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::limit_order_cancel_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::call_order_update_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::bid_collateral_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::limit_order_create_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::limit_order_cancel_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::call_order_update_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::bid_collateral_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::fill_order_operation )

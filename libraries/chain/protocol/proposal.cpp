@@ -105,3 +105,10 @@ void proposal_update_operation::get_required_owner_authorities( flat_set<account
 }
 
 } } // graphene::chain
+
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::proposal_create_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::proposal_update_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::proposal_delete_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::proposal_create_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::proposal_update_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::proposal_delete_operation )

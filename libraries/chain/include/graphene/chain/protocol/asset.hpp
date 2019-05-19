@@ -218,3 +218,7 @@ FC_REFLECT( graphene::chain::price, (base)(quote) )
    (core_exchange_rate)
 
 FC_REFLECT( graphene::chain::price_feed, GRAPHENE_PRICE_FEED_FIELDS )
+
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::asset )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::price )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::price_feed )

@@ -23,6 +23,7 @@
  */
 #pragma once
 #include <graphene/chain/protocol/base.hpp>
+#include <graphene/chain/protocol/asset.hpp>
 
 namespace graphene { namespace chain { 
 
@@ -112,3 +113,5 @@ FC_REFLECT( graphene::chain::block_id_predicate, (id) )
 FC_REFLECT_TYPENAME( graphene::chain::predicate )
 FC_REFLECT( graphene::chain::assert_operation, (fee)(fee_paying_account)(predicates)(required_auths)(extensions) )
  
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::protocol::assert_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::protocol::assert_operation )

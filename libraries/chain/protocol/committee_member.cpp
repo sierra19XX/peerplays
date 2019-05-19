@@ -22,6 +22,9 @@
  * THE SOFTWARE.
  */
 #include <graphene/chain/protocol/committee_member.hpp>
+#include <graphene/chain/protocol/fee_schedule.hpp>
+
+#include <fc/io/raw.hpp>
 
 namespace graphene { namespace chain {
 
@@ -45,3 +48,10 @@ void committee_member_update_global_parameters_operation::validate() const
 }
 
 } } // graphene::chain
+
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::committee_member_create_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::committee_member_update_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::committee_member_update_global_parameters_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::committee_member_create_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::committee_member_update_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::committee_member_update_global_parameters_operation )

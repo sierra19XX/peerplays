@@ -60,6 +60,7 @@ add_library( graphene_chain
              protocol/confidential.cpp
              protocol/vote.cpp
              protocol/tournament.cpp
+             protocol/small_ops.cpp
 
              genesis_state.cpp
              get_config.cpp

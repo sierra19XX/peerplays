@@ -26,6 +26,7 @@
 #include <graphene/chain/protocol/ext.hpp>
 #include <graphene/chain/protocol/types.hpp>
 #include <fc/smart_ref_fwd.hpp>
+#include <memory>
 
 namespace graphene { namespace chain { struct fee_schedule; } }
 
@@ -179,3 +180,5 @@ FC_REFLECT( graphene::chain::chain_parameters,
             (maximum_tournament_number_of_wins)
             (extensions)
           )
+
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::chain_parameters )

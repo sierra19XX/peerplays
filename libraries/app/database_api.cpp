@@ -26,6 +26,8 @@
 #include <graphene/chain/get_config.hpp>
 #include <graphene/chain/tournament_object.hpp>
 #include <graphene/chain/account_object.hpp>
+#include <graphene/chain/hardfork.hpp>
+#include <graphene/chain/protocol/address.hpp>
 
 #include <fc/bloom_filter.hpp>
 #include <fc/smart_ref_impl.hpp>

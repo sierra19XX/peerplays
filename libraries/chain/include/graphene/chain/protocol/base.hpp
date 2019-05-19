@@ -26,8 +26,13 @@
 #include <graphene/chain/protocol/types.hpp>
 #include <graphene/chain/protocol/asset.hpp>
 #include <graphene/chain/protocol/authority.hpp>
+#include <graphene/chain/protocol/ext.hpp>
+
+#include <fc/thread/future.hpp>
 
 namespace graphene { namespace chain {
+   struct asset;
+   struct authority;
 
    /**
     *  @defgroup operations Operations

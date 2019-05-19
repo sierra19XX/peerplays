@@ -24,6 +24,7 @@
 #pragma once
 #include <graphene/chain/protocol/base.hpp>
 #include <graphene/chain/protocol/memo.hpp>
+#include <graphene/chain/protocol/asset.hpp>
 
 namespace graphene { namespace chain { 
 
@@ -179,3 +180,12 @@ FC_REFLECT( graphene::chain::withdraw_permission_update_operation, (fee)(withdra
 FC_REFLECT( graphene::chain::withdraw_permission_claim_operation, (fee)(withdraw_permission)(withdraw_from_account)(withdraw_to_account)(amount_to_withdraw)(memo) );
 FC_REFLECT( graphene::chain::withdraw_permission_delete_operation, (fee)(withdraw_from_account)(authorized_account)
             (withdrawal_permission) )
+
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::withdraw_permission_create_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::withdraw_permission_update_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::withdraw_permission_claim_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::withdraw_permission_delete_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::withdraw_permission_create_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::withdraw_permission_update_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::withdraw_permission_claim_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::withdraw_permission_delete_operation )

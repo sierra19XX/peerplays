@@ -23,6 +23,7 @@
  */
 #pragma once
 #include <graphene/chain/protocol/base.hpp>
+#include <graphene/chain/protocol/asset.hpp>
 
 namespace graphene { namespace chain { 
 
@@ -84,3 +85,8 @@ FC_REFLECT( graphene::chain::witness_create_operation, (fee)(witness_account)(ur
 
 FC_REFLECT( graphene::chain::witness_update_operation::fee_parameters_type, (fee) )
 FC_REFLECT( graphene::chain::witness_update_operation, (fee)(witness)(witness_account)(new_url)(new_signing_key)(new_initial_secret) )
+
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::witness_create_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::witness_update_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::witness_create_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::witness_update_operation )

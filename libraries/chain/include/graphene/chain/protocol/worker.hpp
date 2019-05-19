@@ -23,6 +23,7 @@
  */
 #pragma once
 #include <graphene/chain/protocol/base.hpp>
+#include <graphene/chain/protocol/asset.hpp>
 
 namespace graphene { namespace chain {
 
@@ -104,3 +105,5 @@ FC_REFLECT( graphene::chain::worker_create_operation::fee_parameters_type, (fee)
 FC_REFLECT( graphene::chain::worker_create_operation,
             (fee)(owner)(work_begin_date)(work_end_date)(daily_pay)(name)(url)(initializer) )
 
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::worker_create_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::worker_create_operation )

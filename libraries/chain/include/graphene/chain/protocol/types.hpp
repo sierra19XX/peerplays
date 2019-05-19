@@ -54,6 +54,7 @@ namespace fc { \
    ext template void to_variant( const type& v, variant& vo, uint32_t max_depth ); \
 namespace raw { \
    ext template void pack< datastream<size_t>, type >( datastream<size_t>& s, const type& tx, uint32_t _max_depth=FC_PACK_MAX_DEPTH ); \
+   ext template void pack< sha256::encoder, type >( sha256::encoder& s, const type& tx, uint32_t _max_depth=FC_PACK_MAX_DEPTH ); \
    ext template void pack< datastream<char*>, type >( datastream<char*>& s, const type& tx, uint32_t _max_depth=FC_PACK_MAX_DEPTH ); \
    ext template void unpack< datastream<const char*>, type >( datastream<const char*>& s, type& tx, uint32_t _max_depth=FC_PACK_MAX_DEPTH ); \
 } } // fc::raw
@@ -519,3 +520,12 @@ FC_REFLECT_ENUM( graphene::chain::asset_issuer_permission_flags,
    (witness_fed_asset)
    (committee_fed_asset)
    )
+
+namespace fc { namespace raw {
+   extern template void pack( datastream<size_t>& s, const graphene::chain::public_key_type& tx,
+                              uint32_t _max_depth=FC_PACK_MAX_DEPTH );
+   extern template void pack( datastream<char*>& s, const graphene::chain::public_key_type& tx,
+                              uint32_t _max_depth=FC_PACK_MAX_DEPTH );
+   extern template void unpack( datastream<const char*>& s, graphene::chain::public_key_type& tx,
+                                uint32_t _max_depth=FC_PACK_MAX_DEPTH );
+} } // fc::raw

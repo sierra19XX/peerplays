@@ -23,6 +23,7 @@
  */
 #include <graphene/chain/protocol/memo.hpp>
 #include <fc/crypto/aes.hpp>
+#include <fc/io/raw.hpp>
 
 namespace graphene { namespace chain {
 
@@ -88,3 +89,6 @@ memo_message memo_message::deserialize(const string& serial)
 }
 
 } } // graphene::chain
+
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::memo_message )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::memo_data )
