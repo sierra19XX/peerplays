@@ -64,6 +64,7 @@ add_library( graphene_chain
 
              genesis_state.cpp
              get_config.cpp
+             exceptions.cpp
 
              pts_address.cpp
 
