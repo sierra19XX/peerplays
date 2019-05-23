@@ -25,6 +25,8 @@ RUN \
       locales \
       ntp \
       pkg-config \
+      doxygen \
+      ca-certificates \
       wget \
     && \
     apt-get clean && \
@@ -51,14 +53,18 @@ WORKDIR /peerplays-core
 RUN \
     BOOST_ROOT=$HOME/boost_1_67_0 && \
     git submodule update --init --recursive && \
-    mkdir build && \
-    mkdir build/release && \
-    cd build/release && \
+    BOOST_ROOT=$HOME/opt/boost_1_60_0 && \
+    wget -c 'http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz/download' -O boost_1_60_0.tar.gz &&\
+    tar -zxvf boost_1_60_0.tar.gz && \
+    cd boost_1_60_0/ && \
+    ./bootstrap.sh "--prefix=$BOOST_ROOT" && \
+    ./b2 install -j$(nproc) && \
+    cd .. && \
     cmake \
         -DBOOST_ROOT="$BOOST_ROOT" \
         -DCMAKE_BUILD_TYPE=Release \
-        ../.. && \
-    make witness_node cli_wallet && \
+        . && \
+    make witness_node cli_wallet -j$(nproc) && \
     install -s programs/witness_node/witness_node programs/cli_wallet/cli_wallet /usr/local/bin && \
     #
     # Obtain version
