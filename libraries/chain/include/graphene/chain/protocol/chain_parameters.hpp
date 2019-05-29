@@ -27,12 +27,9 @@
 #include <graphene/chain/protocol/types.hpp>
 #include <fc/smart_ref_fwd.hpp>
 
-#include <graphene/chain/hardfork.hpp>
-
 namespace graphene { namespace chain { struct fee_schedule; } }
 
 namespace graphene { namespace chain {
-<<<<<<< HEAD
    struct parameter_extension
    {
       optional< bet_multiplier_type > min_bet_multiplier;
@@ -40,21 +37,14 @@ namespace graphene { namespace chain {
       optional< uint16_t >            betting_rake_fee_percentage;
       optional< flat_map<bet_multiplier_type, bet_multiplier_type> > permitted_betting_odds_increments;
       optional< uint16_t >            live_betting_delay_time;
-      /* gpos parameters */
-      optional < uint32_t >           gpos_period;
-      optional < uint32_t >           gpos_subperiod;
-      optional < uint32_t >           gpos_period_start;
-      optional < uint16_t >           son_count;
    };
 
-=======
    struct sweeps_parameters_extension {
       uint16_t                sweeps_distribution_percentage      = SWEEPS_DEFAULT_DISTRIBUTION_PERCENTAGE;
       asset_id_type           sweeps_distribution_asset           = SWEEPS_DEFAULT_DISTRIBUTION_ASSET;
       account_id_type         sweeps_vesting_accumulator_account  = SWEEPS_ACCUMULATOR_ACCOUNT;
    };
    typedef static_variant<void_t,sweeps_parameters_extension>  parameter_extension; 
->>>>>>> fix reindex on peerplays network
    struct chain_parameters
    {
       /** using a smart ref breaks the circular dependency created between operations and the fee schedule */
@@ -126,18 +116,6 @@ namespace graphene { namespace chain {
       inline uint16_t live_betting_delay_time()const {
          return extensions.value.live_betting_delay_time.valid() ? *extensions.value.live_betting_delay_time : GRAPHENE_DEFAULT_LIVE_BETTING_DELAY_TIME;
       }
-      inline uint32_t gpos_period()const {
-         return extensions.value.gpos_period.valid() ? *extensions.value.gpos_period : GPOS_PERIOD; /// total seconds of current gpos period
-      }
-      inline uint32_t gpos_subperiod()const {
-         return extensions.value.gpos_subperiod.valid() ? *extensions.value.gpos_subperiod : GPOS_SUBPERIOD; /// gpos_period % gpos_subperiod = 0
-      }
-      inline uint32_t gpos_period_start()const {
-         return extensions.value.gpos_period_start.valid() ? *extensions.value.gpos_period_start : HARDFORK_GPOS_TIME.sec_since_epoch(); /// current period start date
-      }
-      inline uint16_t son_count()const {
-         return extensions.value.son_count.valid() ? *extensions.value.son_count : MIN_SON_MEMBER_COUNT;
-      }
    };
 
 } }  // graphene::chain
@@ -148,10 +126,6 @@ FC_REFLECT( graphene::chain::parameter_extension,
    (betting_rake_fee_percentage)
    (permitted_betting_odds_increments)
    (live_betting_delay_time)
-   (gpos_period)
-   (gpos_subperiod)
-   (gpos_period_start)
-   (son_count)
 )
 
 FC_REFLECT( graphene::chain::sweeps_parameters_extension, 

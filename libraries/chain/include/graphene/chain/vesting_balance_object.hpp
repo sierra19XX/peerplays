@@ -24,8 +24,6 @@
 #pragma once
 
 #include <graphene/chain/protocol/asset.hpp>
-#include <graphene/chain/protocol/vesting.hpp>
-
 #include <graphene/db/object.hpp>
 #include <graphene/db/generic_index.hpp>
 
@@ -145,9 +143,6 @@ namespace graphene { namespace chain {
          /// The vesting policy stores details on when funds vest, and controls when they may be withdrawn
          vesting_policy policy;
 
-         /// We can have 2 types of vesting, gpos and all the rest
-         vesting_balance_type balance_type = vesting_balance_type::unspecified;
-
          vesting_balance_object() {}
          
          asset_id_type get_asset_id() const { return balance.asset_id; }
@@ -193,15 +188,13 @@ namespace graphene { namespace chain {
         ordered_non_unique< tag<by_asset_balance>,
            composite_key<
               vesting_balance_object,
-              const_mem_fun<vesting_balance_object, asset_id_type, &vesting_balance_object::get_asset_id>,
-              member<vesting_balance_object, vesting_balance_type, &vesting_balance_object::balance_type>,
-              const_mem_fun<vesting_balance_object, share_type, &vesting_balance_object::get_asset_amount>
+              member_offset<vesting_balance_object, asset_id_type, (size_t) (offset_s(vesting_balance_object,balance) + offset_s(asset,asset_id))>,
+              member_offset<vesting_balance_object, share_type, (size_t) (offset_s(vesting_balance_object,balance) + offset_s(asset,amount))>
               //member<vesting_balance_object, account_id_type, &vesting_balance_object::owner>
               //member_offset<vesting_balance_object, account_id_type, (size_t) (offset_s(vesting_balance_object,owner))>
            >,
            composite_key_compare<
               std::less< asset_id_type >,
-              std::less< vesting_balance_type >,
               std::greater< share_type >
               //std::less< account_id_type >
            >
@@ -235,5 +228,4 @@ FC_REFLECT_DERIVED(graphene::chain::vesting_balance_object, (graphene::db::objec
                    (owner)
                    (balance)
                    (policy)
-                   (balance_type)
                   )
