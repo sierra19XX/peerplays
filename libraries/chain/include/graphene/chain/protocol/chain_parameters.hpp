@@ -30,7 +30,7 @@
 namespace graphene { namespace chain { struct fee_schedule; } }
 
 namespace graphene { namespace chain {
-   struct parameter_extension
+   struct bet_parameter_extension
    {
       optional< bet_multiplier_type > min_bet_multiplier;
       optional< bet_multiplier_type > max_bet_multiplier;
@@ -44,7 +44,9 @@ namespace graphene { namespace chain {
       asset_id_type           sweeps_distribution_asset           = SWEEPS_DEFAULT_DISTRIBUTION_ASSET;
       account_id_type         sweeps_vesting_accumulator_account  = SWEEPS_ACCUMULATOR_ACCOUNT;
    };
-   typedef static_variant<void_t,sweeps_parameters_extension>  parameter_extension; 
+
+   typedef static_variant<void_t,sweeps_parameters_extension,bet_parameter_extension>  parameter_extension; 
+
    struct chain_parameters
    {
       /** using a smart ref breaks the circular dependency created between operations and the fee schedule */
@@ -120,7 +122,7 @@ namespace graphene { namespace chain {
 
 } }  // graphene::chain
 
-FC_REFLECT( graphene::chain::parameter_extension,
+FC_REFLECT( graphene::chain::bet_parameter_extension,
    (min_bet_multiplier)
    (max_bet_multiplier)
    (betting_rake_fee_percentage)

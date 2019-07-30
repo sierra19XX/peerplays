@@ -162,11 +162,10 @@ namespace detail {
          {
             // t.me/peerplays #seednodes
             vector<string> seeds = {
-              // BEATRICE SEEDS:
-              //  "ppy-beatrice-seed.blckchnd.com:6666",
-              //  "159.69.223.206:7777",
-              //  "51.38.237.243:9666",
-              //  "pbsa-beatrice.blockchainprojectsbv.com:9195"
+                "ppy-beatrice-seed.blckchnd.com:6666",
+                "159.69.223.206:7777",
+                "51.38.237.243:9666",
+                "pbsa-beatrice.blockchainprojectsbv.com:9195"
               // OTTHER SEEDS:
               //  "seed.ppy.blckchnd.com:6112",       // blckchnd 
               //  "ppy.esteem.ws:7777",               // good-karma

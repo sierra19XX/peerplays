@@ -28,6 +28,7 @@
 #include <graphene/db/generic_index.hpp>
 #include <graphene/chain/protocol/event.hpp>
 
+#include <boost/multi_index/composite_key.hpp>
 
 namespace graphene { namespace chain {
    class event_object;

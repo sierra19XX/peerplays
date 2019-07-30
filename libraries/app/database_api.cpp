@@ -113,7 +113,6 @@ class database_api_impl : public std::enable_shared_from_this<database_api_impl>
       vector<bet_object> get_unmatched_bets_for_bettor(betting_market_id_type, account_id_type) const;
       vector<bet_object> get_all_unmatched_bets_for_bettor(account_id_type) const;
 
-   
       // Lottery Assets
       vector<asset_object> get_lotteries( asset_id_type stop  = asset_id_type(),
                                           unsigned limit = 100,

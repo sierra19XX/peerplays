@@ -737,7 +737,7 @@ FC_API(graphene::app::database_api,
    (list_betting_markets)
    (get_unmatched_bets_for_bettor)
    (get_all_unmatched_bets_for_bettor)
-   
+
    // Sweeps
    (get_lotteries)
    (get_account_lotteries)

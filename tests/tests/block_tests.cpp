@@ -842,7 +842,7 @@ BOOST_FIXTURE_TEST_CASE( change_block_interval, database_fixture )
       sign( trx, get_account("init7" ).active.get_keys().front(),init_account_priv_key);
       */
       db.push_transaction(trx);
-//      BOOST_CHECK(proposal_id_type()(db).is_authorized_to_execute(db));
+      BOOST_CHECK(proposal_id_type()(db).is_authorized_to_execute(db));
    }
    BOOST_TEST_MESSAGE( "Verifying that the interval didn't change immediately" );
 
@@ -863,12 +863,12 @@ BOOST_FIXTURE_TEST_CASE( change_block_interval, database_fixture )
    generate_block();   // get the maintenance skip slots out of the way
 
    BOOST_TEST_MESSAGE( "Verify that the new block interval is 1 second" );
-//   BOOST_CHECK_EQUAL(db.get_global_properties().parameters.block_interval, 1);
+   BOOST_CHECK_EQUAL(db.get_global_properties().parameters.block_interval, 1);
    past_time = db.head_block_time().sec_since_epoch();
    generate_block();
-//   BOOST_CHECK_EQUAL(db.head_block_time().sec_since_epoch() - past_time, 1);
+   BOOST_CHECK_EQUAL(db.head_block_time().sec_since_epoch() - past_time, 1);
    generate_block();
-//   BOOST_CHECK_EQUAL(db.head_block_time().sec_since_epoch() - past_time, 2);
+   BOOST_CHECK_EQUAL(db.head_block_time().sec_since_epoch() - past_time, 2);
 } FC_LOG_AND_RETHROW() }
 
 BOOST_FIXTURE_TEST_CASE( pop_block_twice, database_fixture )
@@ -1087,7 +1087,6 @@ BOOST_FIXTURE_TEST_CASE( rsf_missed_blocks, database_fixture )
 
 // the test written in 2015 should be revised, currently it is not possible to push block to db2
 // without skip_witness_signature | skip_witness_schedule_check | skip_authority_check
-/*
 BOOST_FIXTURE_TEST_CASE( transaction_invalidated_in_cache, database_fixture )
 {
    try
@@ -1112,9 +1111,7 @@ BOOST_FIXTURE_TEST_CASE( transaction_invalidated_in_cache, database_fixture )
       while( db2.head_block_num() < db.head_block_num() )
       {
          optional< signed_block > b = db.fetch_block_by_number( db2.head_block_num()+1 );
-         db2.push_block(*b, database::skip_witness_signature|
-               database::skip_authority_check|
-               database::skip_witness_schedule_check);
+         db2.push_block(*b, database::skip_witness_signature);
       }
       BOOST_CHECK( db2.get( alice_id ).name == "alice" );
       BOOST_CHECK( db2.get( bob_id ).name == "bob" );
@@ -1238,7 +1235,6 @@ BOOST_FIXTURE_TEST_CASE( transaction_invalidated_in_cache, database_fixture )
       throw;
    }
 }
-*/
 
 BOOST_AUTO_TEST_CASE( genesis_reserve_ids )
 {
