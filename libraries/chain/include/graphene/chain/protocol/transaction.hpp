@@ -113,6 +113,8 @@ namespace graphene { namespace chain {
       }
 
       void get_required_authorities( flat_set<account_id_type>& active, flat_set<account_id_type>& owner, vector<authority>& other )const;
+
+      virtual uint64_t get_packed_size()const;
    };
 
    /**

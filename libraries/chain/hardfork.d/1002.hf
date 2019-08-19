@@ -1,0 +1,4 @@
+// added transaction size check
+#ifndef HARDFORK_1002_TIME
+#define HARDFORK_1002_TIME (fc::time_point_sec( 1566797400 )) //Monday, 26 August 2019 05:30:00 GMT
+#endif

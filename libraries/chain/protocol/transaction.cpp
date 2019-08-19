@@ -59,6 +59,11 @@ void transaction::validate() const
       operation_validate(op); 
 }
 
+uint64_t transaction::get_packed_size() const
+{
+   return fc::raw::pack_size(*this);
+}
+
 graphene::chain::transaction_id_type graphene::chain::transaction::id() const
 {
    auto h = digest();
