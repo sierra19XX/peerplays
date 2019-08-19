@@ -1066,6 +1066,14 @@ public:
 
       return true;
    }
+
+   void quit()
+   {
+        ilog( "Quitting Cli Wallet ..." );
+
+        throw fc::canceled_exception();
+   }
+
    void save_wallet_file(string wallet_filename = "")
    {
       //
@@ -4272,6 +4280,11 @@ string wallet_api::gethelp(const string& method)const
 bool wallet_api::load_wallet_file( string wallet_filename )
 {
    return my->load_wallet_file( wallet_filename );
+}
+
+void wallet_api::quit()
+{
+    my->quit();
 }
 
 void wallet_api::save_wallet_file( string wallet_filename )
