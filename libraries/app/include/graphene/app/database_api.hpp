@@ -659,6 +659,13 @@ class database_api
        */
       gpos_info get_gpos_info(const account_id_type account) const;
 
+      //////////
+      // RNG //
+      //////////
+      /**
+       * @return Current Random number
+       */
+      int64_t get_random_number(uint64_t bound) const;
 
 
 private:
@@ -786,4 +793,7 @@ FC_API(graphene::app::database_api,
 
    // gpos
    (get_gpos_info)
+
+   // rngs
+   (get_random_number)
 )

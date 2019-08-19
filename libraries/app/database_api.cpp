@@ -163,6 +163,7 @@ class database_api_impl : public std::enable_shared_from_this<database_api_impl>
 
       // gpos
       gpos_info get_gpos_info(const account_id_type account) const;
+      int64_t get_random_number(uint64_t bound) const;
 
    //private:
       template<typename T>
@@ -2070,6 +2071,16 @@ graphene::app::gpos_info database_api_impl::get_gpos_info(const account_id_type 
 
    result.total_amount = total_amount;
    return result;
+}
+
+int64_t database_api::get_random_number(uint64_t bound) const
+{
+   return my->get_random_number(bound);
+}
+
+int64_t database_api_impl::get_random_number(uint64_t bound) const {
+    int64_t result = _db.get_random_bits(bound);
+    return result;
 }
 
 //////////////////////////////////////////////////////////////////////
