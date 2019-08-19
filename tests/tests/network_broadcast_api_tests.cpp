@@ -418,4 +418,29 @@ BOOST_AUTO_TEST_CASE( check_passes_for_duplicated_betting_market_or_group )
     }
 }
 
+BOOST_AUTO_TEST_CASE( broadcast_transaction_too_large ) {
+   try {
+
+      fc::ecc::private_key cid_key = fc::ecc::private_key::regenerate( fc::digest("key") );
+      const account_id_type cid_id = create_account( "cid", cid_key.get_public_key() ).id;
+      fund( cid_id(db) );
+
+      auto nb_api = std::make_shared< graphene::app::network_broadcast_api >( app );
+
+      generate_blocks( HARDFORK_1002_TIME + 10 );
+
+      set_expiration( db, trx );
+      transfer_operation trans;
+      trans.from = cid_id;
+      trans.to   = account_id_type();
+      trans.amount = asset(1);
+      for(int i = 0; i < 250; ++i )
+         trx.operations.push_back( trans );
+      sign( trx, cid_key );
+
+      BOOST_CHECK_THROW( nb_api->broadcast_transaction( trx ), fc::exception );
+
+   } FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
