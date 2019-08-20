@@ -1,6 +1,7 @@
 FROM ubuntu:18.04
 MAINTAINER PeerPlays Blockchain Standards Association
 
+<<<<<<< HEAD
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
@@ -10,6 +11,14 @@ RUN \
       DEBIAN_FRONTEND=noninteractive apt-get install -y \
       autoconf \
       bash \
+=======
+ENV LANG=en_US.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
+RUN \
+    apt-get update -y && \
+    apt-get install -y \
+      autoconf \
+>>>>>>> Docker file for Ubuntu 18.04
       build-essential \
       ca-certificates \
       cmake \
@@ -22,11 +31,15 @@ RUN \
       libreadline-dev \
       libssl-dev \
       libtool \
+<<<<<<< HEAD
       locales \
       ntp \
       pkg-config \
       doxygen \
       ca-certificates \
+=======
+      ntp \
+>>>>>>> Docker file for Ubuntu 18.04
       wget \
     && \
     apt-get clean && \
@@ -51,20 +64,22 @@ WORKDIR /peerplays-core
 
 # Compile Peerplays
 RUN \
-    BOOST_ROOT=$HOME/boost_1_67_0 && \
     git submodule update --init --recursive && \
-    BOOST_ROOT=$HOME/opt/boost_1_60_0 && \
-    wget -c 'http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz/download' -O boost_1_60_0.tar.gz &&\
-    tar -zxvf boost_1_60_0.tar.gz && \
-    cd boost_1_60_0/ && \
+    BOOST_ROOT=$HOME/boost_1_67_0 && \
+    wget -c 'http://sourceforge.net/projects/boost/files/boost/1.67.0/boost_1_67_0.tar.gz/download' -O boost_1_67_0.tar.gz &&\
+    tar -zxvf boost_1_67_0.tar.gz && \
+    cd boost_1_67_0/ && \
     ./bootstrap.sh "--prefix=$BOOST_ROOT" && \
-    ./b2 install -j$(nproc) && \
+    ./b2 install && \
     cd .. && \
+    mkdir build && \
+    mkdir build/release && \
+    cd build/release && \
     cmake \
         -DBOOST_ROOT="$BOOST_ROOT" \
         -DCMAKE_BUILD_TYPE=Release \
-        . && \
-    make witness_node cli_wallet -j$(nproc) && \
+        ../.. && \
+    make witness_node cli_wallet && \
     install -s programs/witness_node/witness_node programs/cli_wallet/cli_wallet /usr/local/bin && \
     #
     # Obtain version
