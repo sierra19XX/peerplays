@@ -10,6 +10,8 @@
 #include <graphene/chain/witness_object.hpp>
 #include <graphene/chain/protocol/committee_member.hpp>
 #include <fc/crypto/digest.hpp>
+#include <graphene/app/database_api.hpp>
+#include <graphene/app/api.hpp>
 
 #include "../common/database_fixture.hpp"
 
