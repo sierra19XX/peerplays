@@ -2,10 +2,12 @@ FROM ubuntu:18.04
 MAINTAINER PeerPlays Blockchain Standards Association
 
 ENV LANG=en_US.UTF-8
-ENV DEBIAN_FRONTEND=noninteractive
+ENV LANGUAGE en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
 RUN \
     apt-get update -y && \
-    apt-get install -y \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y \
       autoconf \
       build-essential \
       ca-certificates \
@@ -49,7 +51,6 @@ WORKDIR /peerplays-core
 
 # Compile Boost 
 RUN \
-    git submodule update --init --recursive && \
     BOOST_ROOT=$HOME/boost_1_67_0 && \
     wget -c 'http://sourceforge.net/projects/boost/files/boost/1.67.0/boost_1_67_0.tar.gz/download' -O boost_1_67_0.tar.gz &&\
     tar -zxvf boost_1_67_0.tar.gz && \
@@ -61,6 +62,7 @@ RUN \
 # Compile Peerplays
 RUN \
     BOOST_ROOT=$HOME/boost_1_67_0 && \
+    git submodule update --init --recursive && \
     mkdir build && \
     mkdir build/release && \
     cd build/release && \
