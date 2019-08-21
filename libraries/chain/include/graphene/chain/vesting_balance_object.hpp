@@ -142,6 +142,8 @@ namespace graphene { namespace chain {
          asset balance;
          /// The vesting policy stores details on when funds vest, and controls when they may be withdrawn
          vesting_policy policy;
+         /// We can have 2 types of vesting, gpos and all the rest
+         vesting_balance_type balance_type = vesting_balance_type::unspecified;
 
          vesting_balance_object() {}
          

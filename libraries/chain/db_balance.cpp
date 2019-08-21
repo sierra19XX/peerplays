@@ -88,34 +88,6 @@ void database::adjust_balance(account_id_type account, asset delta )
 
 } FC_CAPTURE_AND_RETHROW( (account)(delta) ) }
 
-
-void database::adjust_balance(asset_id_type lottery_id, asset delta)
-{
-   if( delta.amount == 0 )
-      return;
-
-   auto& index = get_index_type<lottery_balance_index>().indices().get<by_owner>();
-   auto itr = index.find(lottery_id);
-   if(itr == index.end())
-   {
-      FC_ASSERT( delta.amount > 0, "Insufficient Balance: ${a}'s balance  is less than required ${r}",
-                 ("a",lottery_id)
-                 ("b","test")
-                 ("r",to_pretty_string(-delta)));
-      create<lottery_balance_object>([lottery_id,&delta](lottery_balance_object& b) {
-         b.lottery_id = lottery_id;
-         b.balance = asset(delta.amount, delta.asset_id);
-      });
-   } else {
-      if( delta.amount < 0 )
-         FC_ASSERT( itr->get_balance() >= -delta, "Insufficient Balance: ${a}'s balance of ${b} is less than required ${r}", ("a",lottery_id)("b",to_pretty_string(itr->get_balance()))("r",to_pretty_string(-delta)));
-      modify(*itr, [delta](lottery_balance_object& b) {
-         b.adjust_balance(delta);
-      });
-   }
-}
-
-
 void database::adjust_sweeps_vesting_balance(account_id_type account, int64_t delta)
 {
    if( delta == 0 )

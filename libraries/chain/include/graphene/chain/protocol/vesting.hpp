@@ -26,6 +26,7 @@
 
 namespace graphene { namespace chain { 
 
+   enum vesting_balance_type { unspecified, gpos };
    struct linear_vesting_policy_initializer
    {
       /** while vesting begins on begin_timestamp, none may be claimed before vesting_cliff_seconds have passed */
@@ -72,6 +73,7 @@ namespace graphene { namespace chain {
       account_id_type             owner; ///< Who is able to withdraw the balance
       asset                       amount;
       vesting_policy_initializer  policy;
+      vesting_balance_type        balance_type;
 
       account_id_type   fee_payer()const { return creator; }
       void              validate()const
