@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 MAINTAINER PeerPlays Blockchain Standards Association
 
-ENV LANG=en_US.UTF-8
+ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 
@@ -9,6 +9,7 @@ RUN \
     apt-get update -y && \
       DEBIAN_FRONTEND=noninteractive apt-get install -y \
       autoconf \
+      bash \
       build-essential \
       ca-certificates \
       cmake \
@@ -35,16 +36,6 @@ RUN \
 RUN \
     sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen
-
-# Compile Boost
-RUN \
-    BOOST_ROOT=$HOME/boost_1_67_0 && \
-    wget -c 'http://sourceforge.net/projects/boost/files/boost/1.67.0/boost_1_67_0.tar.gz/download' -O boost_1_67_0.tar.gz &&\
-    tar -zxvf boost_1_67_0.tar.gz && \
-    cd boost_1_67_0/ && \
-    ./bootstrap.sh "--prefix=$BOOST_ROOT" && \
-    ./b2 install && \
-    cd ..
 
 ADD . /peerplays-core
 WORKDIR /peerplays-core
