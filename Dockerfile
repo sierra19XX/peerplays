@@ -37,10 +37,7 @@ RUN \
     sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen
 
-ADD . /peerplays-core
-WORKDIR /peerplays-core
-
-# Compile Boost 
+# Compile Boost
 RUN \
     BOOST_ROOT=$HOME/boost_1_67_0 && \
     wget -c 'http://sourceforge.net/projects/boost/files/boost/1.67.0/boost_1_67_0.tar.gz/download' -O boost_1_67_0.tar.gz &&\
@@ -49,6 +46,9 @@ RUN \
     ./bootstrap.sh "--prefix=$BOOST_ROOT" && \
     ./b2 install && \
     cd ..
+
+ADD . /peerplays-core
+WORKDIR /peerplays-core
 
 # Compile Peerplays
 RUN \
