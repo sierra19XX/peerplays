@@ -256,6 +256,36 @@ class database_api
       vector<optional<account_object>> get_accounts(const vector<account_id_type>& account_ids)const;
 
       /**
+       * @brief Fetch all orders relevant to the specified account and specified market, result orders
+       *        are sorted descendingly by price
+       *
+       * @param account_name_or_id  The name or ID of an account to retrieve
+       * @param base  Base asset
+       * @param quote  Quote asset
+       * @param limit  The limitation of items each query can fetch, not greater than 101
+       * @param start_id  Start order id, fetch orders which price lower than this order, or price equal to this order
+       *                  but order ID greater than this order
+       * @param start_price  Fetch orders with price lower than or equal to this price
+       *
+       * @return List of orders from @ref account_name_or_id to the corresponding account
+       *
+       * @note
+       * 1. if @ref account_name_or_id cannot be tied to an account, empty result will be returned
+       * 2. @ref start_id and @ref start_price can be empty, if so the api will return the "first page" of orders;
+       *    if start_id is specified, its price will be used to do page query preferentially, otherwise the start_price
+       *    will be used; start_id and start_price may be used cooperatively in case of the order specified by start_id
+       *    was just canceled accidentally, in such case, the result orders' price may lower or equal to start_price,
+       *    but orders' id greater than start_id
+       */
+
+      vector<limit_order_object> get_account_limit_orders( const string& account_name_or_id,
+                                                  const string &base,
+                                                  const string &quote,
+                                                  uint32_t limit = 101,
+                                                  optional<limit_order_id_type> ostart_id = optional<limit_order_id_type>(),
+                                                  optional<price> ostart_price = optional<price>());
+
+      /**
        * @brief Fetch all objects relevant to the specified accounts and subscribe to updates
        * @param callback Function to call with updates
        * @param names_or_ids Each item must be the name or ID of an account to retrieve
@@ -737,6 +767,7 @@ FC_API(graphene::app::database_api,
    // Markets / feeds
    (get_order_book)
    (get_limit_orders)
+   (get_account_limit_orders)
    (get_call_orders)
    (get_settle_orders)
    (get_margin_positions)

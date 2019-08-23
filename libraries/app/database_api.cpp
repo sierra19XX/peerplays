@@ -113,8 +113,15 @@ class database_api_impl : public std::enable_shared_from_this<database_api_impl>
       vector<bet_object> get_unmatched_bets_for_bettor(betting_market_id_type, account_id_type) const;
       vector<bet_object> get_all_unmatched_bets_for_bettor(account_id_type) const;
 
+      const account_object* get_account_from_string( const std::string& name_or_id, bool throw_if_not_found = true ) const;
+
       // Markets / feeds
       vector<limit_order_object>         get_limit_orders(asset_id_type a, asset_id_type b, uint32_t limit)const;
+      vector<limit_order_object>         get_account_limit_orders( const string& account_name_or_id,
+                                                                   const string &base,
+                                                                   const string &quote, uint32_t limit,
+                                                                   optional<limit_order_id_type> ostart_id,
+                                                                   optional<price> ostart_price );
       vector<call_order_object>          get_call_orders(asset_id_type a, uint32_t limit)const;
       vector<force_settlement_object>    get_settle_orders(asset_id_type a, uint32_t limit)const;
       vector<call_order_object>          get_margin_positions( const account_id_type& id )const;
@@ -623,6 +630,92 @@ vector<optional<account_object>> database_api_impl::get_accounts(const vector<ac
    return result;
 }
 
+vector<limit_order_object> database_api::get_account_limit_orders( const string& account_name_or_id, const string &base,
+        const string &quote, uint32_t limit, optional<limit_order_id_type> ostart_id, optional<price> ostart_price)
+{
+   return my->get_account_limit_orders( account_name_or_id, base, quote, limit, ostart_id, ostart_price );
+}
+
+vector<limit_order_object> database_api_impl::get_account_limit_orders( const string& account_name_or_id, const string &base,
+        const string &quote, uint32_t limit, optional<limit_order_id_type> ostart_id, optional<price> ostart_price)
+{
+   FC_ASSERT( limit <= 101 );
+
+   vector<limit_order_object>   results;
+   uint32_t                     count = 0;
+
+   const account_object* account = get_account_from_string(account_name_or_id);
+   if (account == nullptr)
+      return results;
+
+   auto assets = lookup_asset_symbols( {base, quote} );
+   FC_ASSERT( assets[0], "Invalid base asset symbol: ${s}", ("s",base) );
+   FC_ASSERT( assets[1], "Invalid quote asset symbol: ${s}", ("s",quote) );
+
+   auto base_id = assets[0]->id;
+   auto quote_id = assets[1]->id;
+
+   if (ostart_price.valid()) {
+      FC_ASSERT(ostart_price->base.asset_id == base_id, "Base asset inconsistent with start price");
+      FC_ASSERT(ostart_price->quote.asset_id == quote_id, "Quote asset inconsistent with start price");
+   }
+
+   const auto& index_by_account = _db.get_index_type<limit_order_index>().indices().get<by_account>();
+   limit_order_multi_index_type::index<by_account>::type::const_iterator lower_itr;
+   limit_order_multi_index_type::index<by_account>::type::const_iterator upper_itr;
+
+   // if both order_id and price are invalid, query the first page
+   if ( !ostart_id.valid() && !ostart_price.valid() )
+   {
+      lower_itr = index_by_account.lower_bound(std::make_tuple(account->id, price::max(base_id, quote_id)));
+   }
+   else if ( ostart_id.valid() )
+   {
+      // in case of the order been deleted during page querying
+      const limit_order_object *p_loo = _db.find(*ostart_id);
+
+      if ( !p_loo )
+      {
+         if ( ostart_price.valid() )
+         {
+            lower_itr = index_by_account.lower_bound(std::make_tuple(account->id, *ostart_price, *ostart_id));
+         }
+         else
+         {
+            // start order id been deleted, yet not provided price either
+            FC_THROW("Order id invalid (maybe just been canceled?), and start price not provided");
+         }
+      }
+      else
+      {
+         const limit_order_object &loo = *p_loo;
+
+         // in case of the order not belongs to specified account or market
+         FC_ASSERT(loo.sell_price.base.asset_id == base_id, "Order base asset inconsistent");
+         FC_ASSERT(loo.sell_price.quote.asset_id == quote_id, "Order quote asset inconsistent with order");
+         FC_ASSERT(loo.seller == account->get_id(), "Order not owned by specified account");
+
+         lower_itr = index_by_account.lower_bound(std::make_tuple(account->id, loo.sell_price, *ostart_id));
+      }
+   }
+   else
+   {
+      // if reach here start_price must be valid
+      lower_itr = index_by_account.lower_bound(std::make_tuple(account->id, *ostart_price));
+   }
+
+   upper_itr = index_by_account.upper_bound(std::make_tuple(account->id, price::min(base_id, quote_id)));
+
+   // Add the account's orders
+   for ( ; lower_itr != upper_itr && count < limit; ++lower_itr, ++count)
+   {
+      const limit_order_object &order = *lower_itr;
+      results.emplace_back(order);
+   }
+
+   return results;
+}
+
 std::map<string,full_account> database_api::get_full_accounts( const vector<string>& names_or_ids, bool subscribe )
 {
    return my->get_full_accounts( names_or_ids, subscribe );
@@ -1092,6 +1185,25 @@ vector<bet_object> database_api_impl::get_all_unmatched_bets_for_bettor(account_
 {
    const auto& bet_idx = _db.get_index_type<bet_object_index>().indices().get<by_bettor_and_odds>();
    return boost::copy_range<vector<bet_object> >(bet_idx.equal_range(std::make_tuple(bettor_id)));
+}
+
+const account_object* database_api_impl::get_account_from_string( const std::string& name_or_id, bool throw_if_not_found) const
+{
+   // TODO cache the result to avoid repeatly fetching from db
+   FC_ASSERT( name_or_id.size() > 0);
+   const account_object* account = nullptr;
+   if (std::isdigit(name_or_id[0]))
+      account = _db.find(fc::variant(name_or_id).as<account_id_type>());
+   else
+   {
+      const auto& idx = _db.get_index_type<account_index>().indices().get<by_name>();
+      auto itr = idx.find(name_or_id);
+      if (itr != idx.end())
+         account = &*itr;
+    }
+    if(throw_if_not_found)
+       FC_ASSERT( account, "no such account" );
+    return account;
 }
 
 //////////////////////////////////////////////////////////////////////
