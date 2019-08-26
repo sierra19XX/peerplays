@@ -26,6 +26,7 @@
 #include <graphene/chain/get_config.hpp>
 #include <graphene/chain/tournament_object.hpp>
 #include <graphene/chain/account_object.hpp>
+#include <graphene/chain/hardfork.hpp>
 
 #include <fc/bloom_filter.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -1773,10 +1774,12 @@ set<public_key_type> database_api::get_required_signatures( const signed_transac
 set<public_key_type> database_api_impl::get_required_signatures( const signed_transaction& trx, const flat_set<public_key_type>& available_keys )const
 {
    wdump((trx)(available_keys));
+   bool allow_non_immediate_owner = ( _db.head_block_time() >= HARDFORK_1002_TIME );
    auto result = trx.get_required_signatures( _db.get_chain_id(),
                                        available_keys,
                                        [&]( account_id_type id ){ return &id(_db).active; },
                                        [&]( account_id_type id ){ return &id(_db).owner; },
+                                       allow_non_immediate_owner,
                                        _db.get_global_properties().parameters.max_authority_depth );
    wdump((result));
    return result;
@@ -1794,7 +1797,11 @@ set<address> database_api::get_potential_address_signatures( const signed_transa
 set<public_key_type> database_api_impl::get_potential_signatures( const signed_transaction& trx )const
 {
    wdump((trx));
+   auto chain_time = _db.head_block_time();
+   bool allow_non_immediate_owner = ( chain_time >= HARDFORK_1002_TIME );
+
    set<public_key_type> result;
+   
    trx.get_required_signatures(
       _db.get_chain_id(),
       flat_set<public_key_type>(),
@@ -1812,8 +1819,18 @@ set<public_key_type> database_api_impl::get_potential_signatures( const signed_t
             result.insert(k);
          return &auth;
       },
+      allow_non_immediate_owner,
       _db.get_global_properties().parameters.max_authority_depth
    );
+
+   // Insert keys in required "other" authories
+   flat_set<account_id_type> required_active;
+   flat_set<account_id_type> required_owner;
+   vector<authority> other;
+   trx.get_required_authorities( required_active, required_owner, other );
+   for( const auto& auth : other )
+      for( const auto& key : auth.get_keys() )
+         result.insert( key );
 
    wdump((result));
    return result;
@@ -1821,6 +1838,9 @@ set<public_key_type> database_api_impl::get_potential_signatures( const signed_t
 
 set<address> database_api_impl::get_potential_address_signatures( const signed_transaction& trx )const
 {
+   auto chain_time = _db.head_block_time();
+   bool allow_non_immediate_owner = ( chain_time >= HARDFORK_1002_TIME );
+
    set<address> result;
    trx.get_required_signatures(
       _db.get_chain_id(),
@@ -1839,6 +1859,7 @@ set<address> database_api_impl::get_potential_address_signatures( const signed_t
             result.insert(k);
          return &auth;
       },
+      allow_non_immediate_owner,
       _db.get_global_properties().parameters.max_authority_depth
    );
    return result;
@@ -1851,9 +1872,11 @@ bool database_api::verify_authority( const signed_transaction& trx )const
 
 bool database_api_impl::verify_authority( const signed_transaction& trx )const
 {
+   bool allow_non_immediate_owner = ( _db.head_block_time() >= HARDFORK_1002_TIME );
    trx.verify_authority( _db.get_chain_id(),
                          [&]( account_id_type id ){ return &id(_db).active; },
                          [&]( account_id_type id ){ return &id(_db).owner; },
+                         allow_non_immediate_owner,
                           _db.get_global_properties().parameters.max_authority_depth );
    return true;
 }
