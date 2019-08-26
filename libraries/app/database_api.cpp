@@ -1668,10 +1668,12 @@ set<public_key_type> database_api::get_required_signatures( const signed_transac
 set<public_key_type> database_api_impl::get_required_signatures( const signed_transaction& trx, const flat_set<public_key_type>& available_keys )const
 {
    wdump((trx)(available_keys));
+   bool allow_non_immediate_owner = ( _db.head_block_time() >= HARDFORK_1002_TIME );
    auto result = trx.get_required_signatures( _db.get_chain_id(),
                                        available_keys,
                                        [&]( account_id_type id ){ return &id(_db).active; },
                                        [&]( account_id_type id ){ return &id(_db).owner; },
+                                       allow_non_immediate_owner,
                                        _db.get_global_properties().parameters.max_authority_depth );
    wdump((result));
    return result;
@@ -1689,7 +1691,11 @@ set<address> database_api::get_potential_address_signatures( const signed_transa
 set<public_key_type> database_api_impl::get_potential_signatures( const signed_transaction& trx )const
 {
    wdump((trx));
+   auto chain_time = _db.head_block_time();
+   bool allow_non_immediate_owner = ( chain_time >= HARDFORK_1002_TIME );
+
    set<public_key_type> result;
+   
    trx.get_required_signatures(
       _db.get_chain_id(),
       flat_set<public_key_type>(),
@@ -1707,6 +1713,7 @@ set<public_key_type> database_api_impl::get_potential_signatures( const signed_t
             result.insert(k);
          return &auth;
       },
+      allow_non_immediate_owner,
       _db.get_global_properties().parameters.max_authority_depth
    );
 
@@ -1746,9 +1753,11 @@ bool database_api::verify_authority( const signed_transaction& trx )const
 
 bool database_api_impl::verify_authority( const signed_transaction& trx )const
 {
+   bool allow_non_immediate_owner = ( _db.head_block_time() >= HARDFORK_1002_TIME );
    trx.verify_authority( _db.get_chain_id(),
                          [&]( account_id_type id ){ return &id(_db).active; },
                          [&]( account_id_type id ){ return &id(_db).owner; },
+                         allow_non_immediate_owner,
                           _db.get_global_properties().parameters.max_authority_depth );
    return true;
 }
