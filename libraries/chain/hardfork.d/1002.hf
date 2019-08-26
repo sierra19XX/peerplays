@@ -1,0 +1,4 @@
+// Bug fix of update commitee member update
+#ifndef HARDFORK_1002_TIME
+#define HARDFORK_1002_TIME (fc::time_point_sec( 1566893013 )) //Tuesday, 27 August 2019 08:03:33 GMT
+#endif
