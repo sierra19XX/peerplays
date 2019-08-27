@@ -27,6 +27,8 @@
 #include <graphene/app/database_api.hpp>
 #include <graphene/chain/hardfork.hpp>
 
+#include <fc/crypto/digest.hpp>
+
 #include "../common/database_fixture.hpp"
 
 using namespace graphene::chain;

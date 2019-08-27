@@ -341,22 +341,23 @@ set<public_key_type> signed_transaction::get_required_signatures(
    vector<authority> other;
    get_required_authorities( required_active, required_owner, other );
 
-
-   sign_state s( get_signature_keys( chain_id ), get_active, get_owner, allow_non_immediate_owner, max_recursion_depth, available_keys );
+   const flat_set<public_key_type>& signature_keys = get_signature_keys(chain_id);
+   sign_state s( signature_keys, get_active, get_owner, allow_non_immediate_owner, max_recursion_depth, available_keys );
 
    for( const auto& auth : other )
       s.check_authority(&auth);
    for( auto& owner : required_owner )
       s.check_authority( get_owner( owner ) );
    for( auto& active : required_active )
-      s.check_authority( active  );
+      s.check_authority( active  ) || s.check_authority( get_owner( active ) );
 
    s.remove_unused_signatures();
 
    set<public_key_type> result;
 
    for( auto& provided_sig : s.provided_signatures )
-      if( available_keys.find( provided_sig.first ) != available_keys.end() )
+      if( available_keys.find( provided_sig.first ) != available_keys.end() 
+            && signature_keys.find( provided_sig.first ) == signature_keys.end() )
          result.insert( provided_sig.first );
 
    return result;

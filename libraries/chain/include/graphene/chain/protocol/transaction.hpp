@@ -188,6 +188,9 @@ namespace graphene { namespace chain {
 
       /// Removes all operations and signatures
       void clear() { operations.clear(); signatures.clear(); }
+
+      /** Removes all signatures */
+      void clear_signatures() { signatures.clear(); }
    };
 
    /**
