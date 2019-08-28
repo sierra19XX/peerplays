@@ -1,0 +1,3 @@
+#ifndef HARDFORK_1002_TIME
+#define HARDFORK_1002_TIME (fc::time_point_sec( 1566927111 ))  // 08/27/2019 5:31pm (UTC)
+#endif
