@@ -590,6 +590,12 @@ class wallet_api
        */
       bool    load_wallet_file(string wallet_filename = "");
 
+      /** Quitting from wallet.
+       *
+       * The current wallet will be closed.
+       */
+      void    quit();
+
       /** Saves the current wallet to the given filename.
        * 
        * @warning This does not change the wallet filename that will be used for future
@@ -2064,4 +2070,5 @@ FC_API( graphene::wallet::wallet_api,
         (get_matched_bets_for_bettor)
         (get_all_matched_bets_for_bettor)
         (buy_ticket)
+        (quit)
       )
