@@ -1,0 +1,4 @@
+// Approve Proposal Enabling 
+#ifndef HARDFORK_1003_TIME
+#define HARDFORK_1003_TIME (fc::time_point_sec( 1566988401 ))
+#endif

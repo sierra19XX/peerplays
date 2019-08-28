@@ -142,12 +142,33 @@ struct proposal_operation_hardfork_visitor
    }
 };
 
+struct hardfork_visitor_1003 // non-recursive proposal visitor
+{
+   typedef void result_type;
+
+   template<typename T>
+   void operator()(const T &v) const {}
+
+   void operator()(const proposal_update_operation &v) const {
+      FC_ASSERT(false, "Not allowed until hardfork 1003");
+   }
+};
+
+
 void_result proposal_create_evaluator::do_evaluate(const proposal_create_operation& o)
 { try {
    const database& d = db();
 
-   proposal_operation_hardfork_visitor vtor( d.head_block_time() );
+   // Calling the proposal hardfork visitor
+   const fc::time_point_sec block_time = d.head_block_time();
+   proposal_operation_hardfork_visitor vtor( block_time );
    vtor( o );
+   if( block_time < HARDFORK_1003_TIME )
+   { // cannot be removed after hf, unfortunately
+      hardfork_visitor_1003 hf1003;
+      for (const op_wrapper &op : o.proposed_ops)
+         op.op.visit( hf1003 );
+   }
 
    const auto& global_parameters = d.get_global_properties().parameters;
 

@@ -558,6 +558,8 @@ namespace graphene { namespace chain {
          node_property_object              _node_property_object;
          fc::hash_ctr_rng<secret_hash_type, 20> _random_number_generator;
          bool                              _slow_replays = false;
+         // Counts nested proposal updates
+         uint32_t                          _push_proposal_nesting_depth = 0;
    };
 
    namespace detail

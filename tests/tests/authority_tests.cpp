@@ -32,6 +32,7 @@
 #include <graphene/chain/asset_object.hpp>
 #include <graphene/chain/committee_member_object.hpp>
 #include <graphene/chain/proposal_object.hpp>
+#include <graphene/chain/hardfork.hpp>
 
 #include <graphene/db/simple_index.hpp>
 
@@ -897,7 +898,6 @@ BOOST_FIXTURE_TEST_CASE( max_authority_membership, database_fixture )
       });
 
       transaction tx;
-      processed_transaction ptx;
 
       private_key_type committee_key = init_account_priv_key;
       // Sam is the creator of accounts
@@ -1315,5 +1315,137 @@ BOOST_FIXTURE_TEST_CASE( nonminimal_sig_test, database_fixture )
       throw;
    }
 }
+
+BOOST_AUTO_TEST_CASE( nested_execution )
+{ try {
+   ACTORS( (alice)(bob) );
+   fund( alice );
+
+   generate_blocks( HARDFORK_1003_TIME + fc::hours(1) );
+   set_expiration( db, trx );
+
+   const auto& gpo = db.get_global_properties();
+
+   proposal_create_operation pco;
+   pco.expiration_time = db.head_block_time() + fc::minutes(1);
+   pco.fee_paying_account = alice_id;
+   proposal_id_type inner;
+   {
+      transfer_operation top;
+      top.from = alice_id;
+      top.to = bob_id;
+      top.amount = asset( 10 );
+      pco.proposed_ops.emplace_back( top );
+      trx.operations.push_back( pco );
+      inner = PUSH_TX( db, trx, ~0 ).operation_results.front().get<object_id_type>();
+      trx.clear();
+      pco.proposed_ops.clear();
+   }
+
+   std::vector<proposal_id_type> nested;
+   nested.push_back( inner );
+   for( size_t i = 0; i < gpo.active_witnesses.size() * 2; i++ )
+   {
+      proposal_update_operation pup;
+      pup.fee_paying_account = alice_id;
+      pup.proposal = nested.back();
+      pup.active_approvals_to_add.insert( alice_id );
+      pco.proposed_ops.emplace_back( pup );
+      trx.operations.push_back( pco );
+      nested.push_back( PUSH_TX( db, trx, ~0 ).operation_results.front().get<object_id_type>() );
+      trx.clear();
+      pco.proposed_ops.clear();
+   }
+
+   proposal_update_operation pup;
+   pup.fee_paying_account = alice_id;
+   pup.proposal = nested.back();
+   pup.active_approvals_to_add.insert( alice_id );
+   trx.operations.push_back( pup );
+   PUSH_TX( db, trx, ~0 );
+
+   for( size_t i = 1; i < nested.size(); i++ )
+      BOOST_CHECK_THROW( db.get<proposal_object>( nested[i] ), fc::assert_exception ); // executed successfully -> object removed
+   db.get<proposal_object>( inner ); // wasn't executed -> object exists, doesn't throw
+} FC_LOG_AND_RETHROW() }
+
+
+BOOST_AUTO_TEST_CASE( enable_proposal_approval )
+{ try {
+   ACTORS( (alice)(bob) );
+   fund( alice );
+   generate_blocks( HARDFORK_1003_TIME - fc::hours(1) );
+   set_expiration( db, trx );
+   // Bob proposes that Alice transfer 500 CORE to himself
+   transfer_operation top;
+   top.from = alice_id;
+   top.to = bob_id;
+   top.amount = asset( 500 );
+   proposal_create_operation pop;
+   pop.proposed_ops.emplace_back(top);
+   pop.fee_paying_account = bob_id;
+   pop.expiration_time = db.head_block_time() + fc::days(1);
+   trx.operations.push_back(pop);
+   sign( trx, bob_private_key );
+   const proposal_id_type pid1 = PUSH_TX( db, trx ).operation_results[0].get<object_id_type>();
+   trx.clear();
+   // Bob wants to propose that Alice confirm the first proposal
+   proposal_update_operation pup;
+   pup.fee_paying_account = alice_id;
+   pup.proposal = pid1;
+   pup.active_approvals_to_add.insert( alice_id );
+   pop.proposed_ops.clear();
+   pop.proposed_ops.emplace_back( pup );
+   trx.operations.push_back(pop);
+   sign( trx, bob_private_key );
+   // before HF_1003, Bob can't do that
+   BOOST_REQUIRE_THROW( PUSH_TX( db, trx ), fc::assert_exception );
+   trx.signatures.clear();
+
+   { // Bob can create a proposal nesting the one containing the proposal_update
+      proposal_create_operation npop;
+      npop.proposed_ops.emplace_back(pop);
+      npop.fee_paying_account = bob_id;
+      npop.expiration_time = db.head_block_time() + fc::days(2);
+      signed_transaction ntx;
+      set_expiration( db, ntx );
+      ntx.operations.push_back(npop);
+      sign( ntx, bob_private_key );
+      const proposal_id_type pid1a = PUSH_TX( db, ntx ).operation_results[0].get<object_id_type>();
+      ntx.clear();
+
+      // But execution after confirming it fails
+      proposal_update_operation npup;
+      npup.fee_paying_account = bob_id;
+      npup.proposal = pid1a;
+      npup.active_approvals_to_add.insert( bob_id );
+      ntx.operations.push_back(npup);
+      sign( ntx, bob_private_key );
+      PUSH_TX( db, ntx );
+      ntx.clear();
+
+      db.get<proposal_object>( pid1a ); // still exists
+   }
+
+   generate_blocks( HARDFORK_1003_TIME + fc::hours(1) );
+   set_expiration( db, trx );
+   sign( trx, bob_private_key );
+   // after the HF it works
+   // after the HF the previously failed tx works too
+   const proposal_id_type pid2 = PUSH_TX( db, trx ).operation_results[0].get<object_id_type>();
+   trx.clear();
+
+   // For completeness, Alice confirms Bob's second proposal
+   pup.proposal = pid2;
+   trx.operations.push_back(pup);
+   sign( trx, alice_private_key );
+   PUSH_TX( db, trx );
+   trx.clear();
+   // Execution of the second proposal should have confirmed the first,
+   // which should have been executed by now.
+   BOOST_CHECK_THROW( db.get<proposal_object>(pid1), fc::assert_exception );
+   BOOST_CHECK_THROW( db.get<proposal_object>(pid2), fc::assert_exception );
+   BOOST_CHECK_EQUAL( top.amount.amount.value, get_balance( bob_id, top.amount.asset_id ) );
+} FC_LOG_AND_RETHROW() }
 
 BOOST_AUTO_TEST_SUITE_END()
