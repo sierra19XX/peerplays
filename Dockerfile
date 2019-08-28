@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM phusion/baseimage:0.9.19
 MAINTAINER PeerPlays Blockchain Standards Association
 
 ENV LANG en_US.UTF-8
@@ -23,8 +23,8 @@ RUN \
       libssl-dev \
       libtool \
       locales \
-      pkg-config \
       ntp \
+      pkg-config \
       wget \
     && \
     apt-get clean && \
@@ -34,18 +34,18 @@ RUN \
     sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen
 
-ADD . /peerplays-core
-WORKDIR /peerplays-core
-
 # Compile Boost
 RUN \
     BOOST_ROOT=$HOME/boost_1_67_0 && \
-    wget -c 'http://sourceforge.net/projects/boost/files/boost/1.67.0/boost_1_67_0.tar.gz/download' -O boost_1_67_0.tar.gz &&\
-    tar -zxvf boost_1_67_0.tar.gz && \
+    wget -q -c 'http://sourceforge.net/projects/boost/files/boost/1.67.0/boost_1_67_0.tar.gz/download' -O boost_1_67_0.tar.gz &&\
+    tar -zxf boost_1_67_0.tar.gz && \
     cd boost_1_67_0/ && \
     ./bootstrap.sh "--prefix=$BOOST_ROOT" && \
     ./b2 install && \
     cd ..
+
+ADD . /peerplays-core
+WORKDIR /peerplays-core
 
 # Compile Peerplays
 RUN \
