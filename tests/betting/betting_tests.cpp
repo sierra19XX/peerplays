@@ -2394,7 +2394,6 @@ BOOST_AUTO_TEST_CASE(event_driven_standard_progression_3)
       fc::variants objects_from_bookie = bookie_api.get_objects({capitals_vs_blackhawks_id});
 
       BOOST_CHECK_EQUAL(objects_from_bookie[0]["status"].as<std::string>(1), "canceled");
- 
    } FC_LOG_AND_RETHROW()
 }
 
