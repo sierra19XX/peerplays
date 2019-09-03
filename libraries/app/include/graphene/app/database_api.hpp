@@ -668,14 +668,6 @@ class database_api
       vector<tournament_id_type> get_registered_tournaments(account_id_type account_filter, uint32_t limit) const;
 
       //////////
-      // GPOS //
-      //////////
-      /**
-       * @return account and network GPOS information
-       */
-      gpos_info get_gpos_info(const account_id_type account) const;
-
-      //////////
       // RNG //
       //////////
       /**
@@ -811,9 +803,6 @@ FC_API(graphene::app::database_api,
    (get_tournaments_by_state)
    (get_tournaments )
    (get_registered_tournaments)
-
-   // gpos
-   (get_gpos_info)
 
    // rngs
    (get_random_number)
