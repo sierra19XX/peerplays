@@ -675,8 +675,7 @@ class database_api
        */
       int64_t get_random_number(uint64_t bound) const;
 
-
-private:
+   private:
       std::shared_ptr< database_api_impl > my;
 };
 
