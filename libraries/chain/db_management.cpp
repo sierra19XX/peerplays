@@ -123,7 +123,7 @@ void database::wipe(const fc::path& data_dir, bool include_blocks)
 {
    ilog("Wiping database", ("include_blocks", include_blocks));
    if (_opened) {
-     close();
+     close(false);
    }
    object_database::wipe(data_dir);
    if( include_blocks )
