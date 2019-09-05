@@ -50,9 +50,9 @@ void database::update_global_dynamic_data( const signed_block& b, const uint32_t
 
    // dynamic global properties updating
    modify( _dgp, [&b,this,missed_blocks]( dynamic_global_property_object& dgp ){
-      secret_hash_type::encoder enc;       
-      fc::raw::pack( enc, dgp.random );       
-      fc::raw::pack( enc, b.previous_secret );        
+      secret_hash_type::encoder enc;
+      fc::raw::pack( enc, dgp.random );
+      fc::raw::pack( enc, b.previous_secret );
       dgp.random = enc.result();
 
       _random_number_generator = fc::hash_ctr_rng<secret_hash_type, 20>(dgp.random.data());
