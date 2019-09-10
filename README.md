@@ -2,7 +2,8 @@
 
 `master` | `develop` | `hardfork [TODO]` | `testnet[TODO]` | `SON testnet` 
  --- | --- | --- | --- | ---
-![pipeline status](https://gitlab.com/PBSA/peerplays/badges/master/pipeline.svg)| [![pipeline status](https://gitlab.com/PBSA/peerplays/badges/develop/pipeline.svg)]() | NA | TODO | coming soon
+![https://gitlab.com/PBSA/peerplays/pipelines](https://gitlab.com/PBSA/peerplays/badges/master/pipeline.svg) | [![https://gitlab.com/PBSA/peerplays/pipelines](https://gitlab.com/PBSA/peerplays/badges/develop/pipeline.svg)]() | NA | TODO | coming soon
+
 
 
 Intro for new developers and witnesses
