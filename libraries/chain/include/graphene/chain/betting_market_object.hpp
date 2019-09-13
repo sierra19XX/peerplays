@@ -45,7 +45,6 @@ namespace fc {
 
 namespace graphene { namespace chain {
 
-FC_DECLARE_EXCEPTION(no_transition, 100000, "Invalid state transition");
 class database;
 
 struct by_event_id;
@@ -717,17 +716,11 @@ inline Stream& operator>>( Stream& s, betting_market_group_object& betting_marke
 
 } } // graphene::chain
 
-FC_REFLECT_TYPENAME( graphene::chain::betting_market_rules_object )
+FC_REFLECT_DERIVED( graphene::chain::betting_market_rules_object, (graphene::db::object), (name)(description) )
 FC_REFLECT_TYPENAME( graphene::chain::betting_market_group_object )
 FC_REFLECT_TYPENAME( graphene::chain::betting_market_object )
-FC_REFLECT_TYPENAME( graphene::chain::bet_object )
-FC_REFLECT_TYPENAME( graphene::chain::betting_market_position_object )
-
-MAP_OBJECT_ID_TO_TYPE( graphene::chain::betting_market_rules_object )
-MAP_OBJECT_ID_TO_TYPE( graphene::chain::betting_market_group_object )
-MAP_OBJECT_ID_TO_TYPE( graphene::chain::betting_market_object )
-MAP_OBJECT_ID_TO_TYPE( graphene::chain::bet_object )
-MAP_OBJECT_ID_TO_TYPE( graphene::chain::betting_market_position_object )
+FC_REFLECT_DERIVED( graphene::chain::bet_object, (graphene::db::object), (bettor_id)(betting_market_id)(amount_to_bet)(backer_multiplier)(back_or_lay)(end_of_delay) )
+FC_REFLECT_DERIVED( graphene::chain::betting_market_position_object, (graphene::db::object), (bettor_id)(betting_market_id)(pay_if_payout_condition)(pay_if_not_payout_condition)(pay_if_canceled)(pay_if_not_canceled)(fees_collected) )
 
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::betting_market_rules_object )
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::betting_market_group_object )

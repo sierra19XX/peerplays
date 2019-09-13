@@ -24,7 +24,7 @@
 #pragma once
 #include <boost/iterator/iterator_facade.hpp>
 
-#include <graphene/protocol/types.hpp>
+#include <graphene/chain/protocol/types.hpp>
 
 #include <fc/network/ip.hpp>
 #include <fc/time.hpp>

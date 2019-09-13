@@ -89,6 +89,8 @@
 # include <sys/stat.h>
 #endif
 
+template class fc::api<graphene::wallet::wallet_api>;
+
 #define BRAIN_KEY_WORD_COUNT 16
 
 namespace graphene { namespace wallet {

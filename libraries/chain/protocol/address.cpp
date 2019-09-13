@@ -30,9 +30,8 @@
 
 namespace graphene {
   namespace chain {
-   address::address(){}
 
-   address::address( const std::string& base58str )
+  address::address( const std::string& base58str )
    {
       std::string prefix( GRAPHENE_ADDRESS_PREFIX );
       FC_ASSERT( is_valid( base58str, prefix ), "${str}", ("str",base58str) );
@@ -112,4 +111,4 @@ namespace fc
     }
 }
 
-GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::protocol::address )
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::address )

@@ -48,7 +48,6 @@ void call_order_update_operation::validate()const
 
 } } // graphene::chain
 
-GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::call_order_update_operation::options_type )
 GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::limit_order_create_operation::fee_parameters_type )
 GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::limit_order_cancel_operation::fee_parameters_type )
 GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::call_order_update_operation::fee_parameters_type )

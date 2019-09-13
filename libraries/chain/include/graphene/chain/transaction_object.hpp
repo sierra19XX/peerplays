@@ -69,8 +69,6 @@ namespace graphene { namespace chain {
    typedef generic_index<transaction_object, transaction_multi_index_type> transaction_index;
 } }
 
-MAP_OBJECT_ID_TO_TYPE(graphene::chain::transaction_object)
-
-FC_REFLECT_TYPENAME( graphene::chain::transaction_object )
+FC_REFLECT_DERIVED( graphene::chain::transaction_object, (graphene::db::object), (trx)(trx_id) )
 
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::transaction_object )

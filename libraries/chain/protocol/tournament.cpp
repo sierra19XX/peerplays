@@ -23,6 +23,8 @@
  */
 #include <graphene/chain/protocol/tournament.hpp>
 
+#include <fc/io/raw.hpp>
+
 namespace graphene { namespace chain {
 
 void tournament_options::validate() const
@@ -73,3 +75,15 @@ void  game_move_operation::validate()const
 }
 
 } } // namespace graphene::chain
+
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::tournament_options )
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::tournament_create_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::tournament_join_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::tournament_leave_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::game_move_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::tournament_payout_operation )
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::tournament_create_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::tournament_join_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::tournament_leave_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::game_move_operation::fee_parameters_type )
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::tournament_payout_operation::fee_parameters_type  )

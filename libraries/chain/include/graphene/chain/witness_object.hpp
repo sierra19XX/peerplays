@@ -70,8 +70,16 @@ namespace graphene { namespace chain {
    using witness_index = generic_index<witness_object, witness_multi_index_type>;
 } } // graphene::chain
 
-MAP_OBJECT_ID_TO_TYPE(graphene::chain::witness_object)
-
-FC_REFLECT_TYPENAME( graphene::chain::witness_object )
+FC_REFLECT_DERIVED( graphene::chain::witness_object, (graphene::db::object),
+                    (witness_account)
+                    (last_aslot)
+                    (signing_key)
+                    (pay_vb)
+                    (vote_id)
+                    (total_votes)
+                    (url)
+                    (total_missed)
+                    (last_confirmed_block_num)
+                  )
 
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::witness_object )

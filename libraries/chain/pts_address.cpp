@@ -88,22 +88,4 @@ namespace graphene { namespace chain {
 
 } } // namespace graphene
 
-namespace fc
-{
-   void to_variant( const graphene::chain::pts_address& var,  variant& vo )
-   {
-        vo = std::string(var);
-   }
-   void from_variant( const variant& var,  graphene::chain::pts_address& vo )
-   {
-        vo = graphene::chain::pts_address( var.as_string() );
-   }
-
-namespace raw {
-   template void pack( datastream<size_t>& s, const graphene::protocol::pts_address& tx,
-                       uint32_t _max_depth=FC_PACK_MAX_DEPTH );
-   template void pack( datastream<char*>& s, const graphene::protocol::pts_address& tx,
-                       uint32_t _max_depth=FC_PACK_MAX_DEPTH );
-   template void unpack( datastream<const char*>& s, graphene::protocol::pts_address& tx,
-                         uint32_t _max_depth=FC_PACK_MAX_DEPTH );
-} } // fc::raw
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::pts_address)

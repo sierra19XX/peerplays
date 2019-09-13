@@ -70,6 +70,6 @@ FC_REFLECT( graphene::chain::block_header,
 FC_REFLECT_DERIVED( graphene::chain::signed_block_header, (graphene::chain::block_header), (witness_signature) )
 FC_REFLECT_DERIVED( graphene::chain::signed_block, (graphene::chain::signed_block_header), (transactions) )
 
-GRAPHENE_EXTERNAL_SERIALIZATION(extern, graphene::protocol::block_header)
-GRAPHENE_EXTERNAL_SERIALIZATION(extern, graphene::protocol::signed_block_header)
-GRAPHENE_EXTERNAL_SERIALIZATION(extern, graphene::protocol::signed_block)
+GRAPHENE_EXTERNAL_SERIALIZATION(extern, graphene::chain::block_header)
+GRAPHENE_EXTERNAL_SERIALIZATION(extern, graphene::chain::signed_block_header)
+GRAPHENE_EXTERNAL_SERIALIZATION(extern, graphene::chain::signed_block)

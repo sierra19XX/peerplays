@@ -343,7 +343,6 @@ extern template class fc::api<graphene::app::network_node_api>;
 extern template class fc::api<graphene::app::history_api>;
 extern template class fc::api<graphene::app::crypto_api>;
 extern template class fc::api<graphene::app::asset_api>;
-extern template class fc::api<graphene::app::orders_api>;
 extern template class fc::api<graphene::debug_witness::debug_api>;
 
 namespace graphene { namespace app {

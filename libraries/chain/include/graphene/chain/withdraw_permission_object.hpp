@@ -109,8 +109,14 @@ namespace graphene { namespace chain {
 
 } } // graphene::chain
 
-MAP_OBJECT_ID_TO_TYPE(graphene::chain::withdraw_permission_object)
-
-FC_REFLECT_TYPENAME( graphene::chain::withdraw_permission_object )
+FC_REFLECT_DERIVED( graphene::chain::withdraw_permission_object, (graphene::db::object),
+                    (withdraw_from_account)
+                    (authorized_account)
+                    (withdrawal_limit)
+                    (withdrawal_period_sec)
+                    (period_start_time)
+                    (expiration)
+                    (claimed_this_period)
+                 )
 
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::withdraw_permission_object )

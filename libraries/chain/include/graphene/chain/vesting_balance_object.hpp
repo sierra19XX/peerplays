@@ -206,16 +206,30 @@ namespace graphene { namespace chain {
 
 } } // graphene::chain
 
-FC_REFLECT_TYPENAME(graphene::chain::linear_vesting_policy)
+FC_REFLECT_DERIVED(graphene::chain::linear_vesting_policy, BOOST_PP_SEQ_NIL,
+           (begin_timestamp)
+           (vesting_cliff_seconds)
+           (vesting_duration_seconds)
+           (begin_balance)
+          )
 
-FC_REFLECT_TYPENAME(graphene::chain::cdd_vesting_policy)
+FC_REFLECT_DERIVED(graphene::chain::cdd_vesting_policy, BOOST_PP_SEQ_NIL,
+           (vesting_seconds)
+           (start_claim)
+           (coin_seconds_earned)
+           (coin_seconds_earned_last_update)
+          )
 
-FC_REFLECT_TYPENAME( graphene::chain::vesting_policy )
+//FC_REFLECT_TYPENAME( graphene::chain::vesting_policy )
+FC_REFLECT_EMPTY( graphene::chain::vesting_policy )
 
-FC_REFLECT_TYPENAME(graphene::chain::vesting_balance_object)
-
-FC_REFLECT_ENUM( graphene::chain::vesting_balance_type, (unspecified)(cashback)(worker)(witness)(market_fee_sharing) )
+FC_REFLECT_DERIVED(graphene::chain::vesting_balance_object, (graphene::db::object),
+                   (owner)
+                   (balance)
+                   (policy)
+                  )
 
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::linear_vesting_policy )
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::cdd_vesting_policy )
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::vesting_balance_object )
+GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::vesting_policy )

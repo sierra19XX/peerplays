@@ -49,3 +49,5 @@ void from_variant(const variant& var, graphene::chain::vote_id_type& vo)
 }
 
 } // fc
+
+GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::vote_id_type )

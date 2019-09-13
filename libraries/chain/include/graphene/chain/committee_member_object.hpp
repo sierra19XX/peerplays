@@ -25,7 +25,7 @@
 #include <graphene/chain/protocol/types.hpp>
 #include <graphene/db/object.hpp>
 #include <graphene/db/generic_index.hpp>
-#include <graphene/protocol/vote.hpp>
+#include <graphene/chain/protocol/vote.hpp>
 
 namespace graphene { namespace chain {
    using namespace graphene::db;
@@ -72,8 +72,7 @@ namespace graphene { namespace chain {
    using committee_member_index = generic_index<committee_member_object, committee_member_multi_index_type>;
 } } // graphene::chain
 
-MAP_OBJECT_ID_TO_TYPE(graphene::chain::committee_member_object)
-
-FC_REFLECT_TYPENAME( graphene::chain::committee_member_object )
+FC_REFLECT_DERIVED( graphene::chain::committee_member_object, (graphene::db::object),
+                    (committee_member_account)(vote_id)(total_votes)(url) )
 
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::committee_member_object )

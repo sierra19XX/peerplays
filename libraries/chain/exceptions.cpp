@@ -47,8 +47,8 @@ namespace graphene { namespace chain {
    FC_IMPLEMENT_DERIVED_EXCEPTION( undo_database_exception,      chain_exception, 3070000, "undo database exception" )
    FC_IMPLEMENT_DERIVED_EXCEPTION( unlinkable_block_exception,   chain_exception, 3080000, "unlinkable block" )
    FC_IMPLEMENT_DERIVED_EXCEPTION( black_swan_exception,         chain_exception, 3090000, "black swan" )
-   FC_IMPLEMENT_DERIVED_EXCEPTION( plugin_exception,             chain_exception, 3100000, "plugin exception" )
 
+   FC_IMPLEMENT_DERIVED_EXCEPTION( invalid_pts_address,          utility_exception, 3060001, "invalid pts address" )
    FC_IMPLEMENT_DERIVED_EXCEPTION( insufficient_feeds,           chain_exception, 37006, "insufficient feeds" )
 
    FC_IMPLEMENT_DERIVED_EXCEPTION( pop_empty_chain,              undo_database_exception, 3070001, "there are no blocks to pop" )
@@ -136,9 +136,9 @@ namespace graphene { namespace chain {
       { throw( effect_type( e.what(), e.get_log() ) ); }
 
 
-   FC_IMPLEMENT_EXCEPTION( protocol_exception, 4000000, "protocol exception" )
+   FC_IMPLEMENT_EXCEPTION(no_transition, 100000, "Invalid state transition")
 
-   FC_IMPLEMENT_DERIVED_EXCEPTION( transaction_exception,      protocol_exception, 4010000,
+   FC_IMPLEMENT_DERIVED_EXCEPTION( transaction_exception,      chain_exception, 4010000,
                                    "transaction validation exception" )
 
    FC_IMPLEMENT_DERIVED_EXCEPTION( tx_missing_active_auth,     transaction_exception, 4010001,

@@ -128,11 +128,11 @@ typedef generic_index<account_transaction_history_object, account_transaction_hi
    
 } } // graphene::chain
 
-MAP_OBJECT_ID_TO_TYPE(graphene::chain::operation_history_object)
-MAP_OBJECT_ID_TO_TYPE(graphene::chain::account_transaction_history_object)
+FC_REFLECT_DERIVED( graphene::chain::operation_history_object, (graphene::chain::object),
+                    (op)(result)(block_num)(trx_in_block)(op_in_trx)(virtual_op) )
 
-FC_REFLECT_TYPENAME( graphene::chain::operation_history_object )
-FC_REFLECT_TYPENAME( graphene::chain::account_transaction_history_object )
+FC_REFLECT_DERIVED( graphene::chain::account_transaction_history_object, (graphene::chain::object),
+                    (account)(operation_id)(sequence)(next) )
 
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::operation_history_object )
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::account_transaction_history_object )

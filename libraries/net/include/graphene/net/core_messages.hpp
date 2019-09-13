@@ -25,6 +25,7 @@
 
 #include <graphene/net/config.hpp>
 #include <graphene/chain/protocol/block.hpp>
+#include <graphene/chain/protocol/fee_schedule.hpp>
 
 #include <fc/crypto/ripemd160.hpp>
 #include <fc/crypto/elliptic.hpp>
@@ -34,8 +35,6 @@
 #include <fc/variant_object.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/io/enum_type.hpp>
-
-#include <graphene/chain/protocol/block.hpp>
 
 #include <vector>
 
@@ -442,28 +441,81 @@ FC_REFLECT_ENUM(graphene::net::firewall_check_result, (unable_to_check)
                                                  (unable_to_connect)
                                                  (connection_successful))
 
-FC_REFLECT_TYPENAME( graphene::net::trx_message )
-FC_REFLECT_TYPENAME( graphene::net::block_message )
-FC_REFLECT_TYPENAME( graphene::net::item_id )
-FC_REFLECT_TYPENAME( graphene::net::item_ids_inventory_message )
-FC_REFLECT_TYPENAME( graphene::net::blockchain_item_ids_inventory_message )
-FC_REFLECT_TYPENAME( graphene::net::fetch_blockchain_item_ids_message )
-FC_REFLECT_TYPENAME( graphene::net::fetch_items_message )
-FC_REFLECT_TYPENAME( graphene::net::item_not_available_message )
-FC_REFLECT_TYPENAME( graphene::net::hello_message )
-FC_REFLECT_TYPENAME( graphene::net::connection_accepted_message )
-FC_REFLECT_TYPENAME( graphene::net::connection_rejected_message )
-FC_REFLECT_TYPENAME( graphene::net::address_request_message )
-FC_REFLECT_TYPENAME( graphene::net::address_info )
-FC_REFLECT_TYPENAME( graphene::net::address_message )
-FC_REFLECT_TYPENAME( graphene::net::closing_connection_message )
-FC_REFLECT_TYPENAME( graphene::net::current_time_request_message )
-FC_REFLECT_TYPENAME( graphene::net::current_time_reply_message )
-FC_REFLECT_TYPENAME( graphene::net::check_firewall_message )
-FC_REFLECT_TYPENAME( graphene::net::check_firewall_reply_message )
-FC_REFLECT_TYPENAME( graphene::net::get_current_connections_request_message )
-FC_REFLECT_TYPENAME( graphene::net::current_connection_data )
-FC_REFLECT_TYPENAME( graphene::net::get_current_connections_reply_message )
+FC_REFLECT( graphene::net::trx_message, (trx) )
+FC_REFLECT( graphene::net::block_message, (block)(block_id) )
+FC_REFLECT( graphene::net::item_id,
+                               (item_type)
+                               (item_hash) )
+FC_REFLECT( graphene::net::item_ids_inventory_message,
+                                                  (item_type)
+                                                  (item_hashes_available) )
+FC_REFLECT( graphene::net::blockchain_item_ids_inventory_message,
+                                     (total_remaining_item_count)
+                                     (item_type)
+                                     (item_hashes_available) )
+FC_REFLECT( graphene::net::fetch_blockchain_item_ids_message, (item_type)
+                                                         (blockchain_synopsis) )
+FC_REFLECT( graphene::net::fetch_items_message,
+                                           (item_type)
+                                           (items_to_fetch) )
+FC_REFLECT( graphene::net::item_not_available_message, (requested_item) )
+FC_REFLECT( graphene::net::hello_message,
+                                     (user_agent)
+                                     (core_protocol_version)
+                                     (inbound_address)
+                                     (inbound_port)
+                                     (outbound_port)
+                                     (node_public_key)
+                                     (signed_shared_secret)
+                                     (chain_id)
+                                     (user_data) )
+
+FC_REFLECT_EMPTY( graphene::net::connection_accepted_message)
+FC_REFLECT( graphene::net::connection_rejected_message,
+                                                   (user_agent)
+                                                   (core_protocol_version)
+                                                   (remote_endpoint)
+                                                   (reason_code)
+                                                   (reason_string))
+FC_REFLECT_EMPTY( graphene::net::address_request_message )
+FC_REFLECT( graphene::net::address_info,
+                                    (remote_endpoint)
+                                    (last_seen_time)
+                                    (latency)
+                                    (node_id)
+                                    (direction)
+                                    (firewalled) )
+FC_REFLECT( graphene::net::address_message, (addresses) )
+FC_REFLECT( graphene::net::closing_connection_message,
+                                                  (reason_for_closing)
+                                                  (closing_due_to_error)
+                                                  (error) )
+FC_REFLECT(graphene::net::current_time_request_message, (request_sent_time))
+FC_REFLECT(graphene::net::current_time_reply_message,
+                                                 (request_sent_time)
+                                                 (request_received_time)
+                                                 (reply_transmitted_time))
+FC_REFLECT(graphene::net::check_firewall_message, (node_id)(endpoint_to_check))
+FC_REFLECT(graphene::net::check_firewall_reply_message,
+                                (node_id)(endpoint_checked)(result))
+FC_REFLECT_EMPTY(graphene::net::get_current_connections_request_message)
+FC_REFLECT(graphene::net::current_connection_data,
+                                              (connection_duration)
+                                              (remote_endpoint)
+                                              (node_id)
+                                              (clock_offset)
+                                              (round_trip_delay)
+                                              (connection_direction)
+                                              (firewalled)
+                                              (user_data))
+FC_REFLECT(graphene::net::get_current_connections_reply_message,
+                                    (upload_rate_one_minute)
+                                    (download_rate_one_minute)
+                                    (upload_rate_fifteen_minutes)
+                                    (download_rate_fifteen_minutes)
+                                    (upload_rate_one_hour)
+                                    (download_rate_one_hour)
+                                    (current_connections))
 
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::net::trx_message )
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::net::block_message )

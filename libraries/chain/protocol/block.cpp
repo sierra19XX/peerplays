@@ -92,6 +92,6 @@ namespace graphene { namespace chain {
 
 } }
 
-GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::protocol::block_header)
-GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::protocol::signed_block_header)
-GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::protocol::signed_block)
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::block_header)
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::signed_block_header)
+GRAPHENE_EXTERNAL_SERIALIZATION(/*not extern*/, graphene::chain::signed_block)

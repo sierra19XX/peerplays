@@ -26,33 +26,11 @@
 #include <graphene/chain/protocol/buyback.hpp>
 #include <graphene/chain/protocol/chain_parameters.hpp>
 #include <graphene/chain/protocol/fba.hpp>
+#include <graphene/chain/protocol/fee_schedule.hpp>
 #include <graphene/chain/protocol/special_authority.hpp>
 #include <graphene/chain/protocol/vesting.hpp>
 
 #include <fc/io/raw.hpp>
-
-namespace graphene { namespace chain {
-
-FC_IMPLEMENT_EXCEPTION( protocol_exception, 4000000, "protocol exception" )
-
-FC_IMPLEMENT_DERIVED_EXCEPTION( transaction_exception,      protocol_exception, 4010000,
-                                "transaction validation exception" )
-
-FC_IMPLEMENT_DERIVED_EXCEPTION( tx_missing_active_auth,     transaction_exception, 4010001,
-                                "missing required active authority" )
-FC_IMPLEMENT_DERIVED_EXCEPTION( tx_missing_owner_auth,      transaction_exception, 4010002,
-                                "missing required owner authority" )
-FC_IMPLEMENT_DERIVED_EXCEPTION( tx_missing_other_auth,      transaction_exception, 4010003,
-                                "missing required other authority" )
-FC_IMPLEMENT_DERIVED_EXCEPTION( tx_irrelevant_sig,          transaction_exception, 4010004,
-                                "irrelevant signature included" )
-FC_IMPLEMENT_DERIVED_EXCEPTION( tx_duplicate_sig,           transaction_exception, 4010005,
-                                "duplicate signature included" )
-FC_IMPLEMENT_DERIVED_EXCEPTION( invalid_committee_approval, transaction_exception, 4010006,
-                                "committee account cannot directly approve transaction" )
-FC_IMPLEMENT_DERIVED_EXCEPTION( insufficient_fee,           transaction_exception, 4010007, "insufficient fee" )
-
-} } // graphene::chain
 
 GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::balance_claim_operation )
 GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::buyback_account_options )
@@ -66,12 +44,10 @@ GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::vesting_balanc
 GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::chain_parameters )
 GRAPHENE_EXTERNAL_SERIALIZATION( /*not extern*/, graphene::chain::top_holders_special_authority )
 
+
 namespace fc {
 namespace raw {
-   template void pack( datastream<size_t>& s, const graphene::protocol::public_key_type& tx,
-                       uint32_t _max_depth=FC_PACK_MAX_DEPTH );
-   template void pack( datastream<char*>& s, const graphene::protocol::public_key_type& tx,
-                       uint32_t _max_depth=FC_PACK_MAX_DEPTH );
-   template void unpack( datastream<const char*>& s, graphene::protocol::public_key_type& tx,
-                         uint32_t _max_depth=FC_PACK_MAX_DEPTH );
+   template void pack( datastream<size_t>& s, const graphene::chain::public_key_type& tx);
+   template void pack( datastream<char*>& s, const graphene::chain::public_key_type& tx);
+   template void unpack( datastream<const char*>& s, graphene::chain::public_key_type& tx);
 } } // fc::raw

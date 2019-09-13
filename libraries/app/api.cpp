@@ -49,7 +49,6 @@ template class fc::api<graphene::app::network_node_api>;
 template class fc::api<graphene::app::history_api>;
 template class fc::api<graphene::app::crypto_api>;
 template class fc::api<graphene::app::asset_api>;
-template class fc::api<graphene::app::orders_api>;
 template class fc::api<graphene::debug_witness::debug_api>;
 template class fc::api<graphene::app::login_api>;
 

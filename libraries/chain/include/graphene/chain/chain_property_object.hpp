@@ -42,8 +42,9 @@ class chain_property_object : public abstract_object<chain_property_object>
 
 } }
 
-MAP_OBJECT_ID_TO_TYPE(graphene::chain::chain_property_object)
-
-FC_REFLECT_TYPENAME( graphene::chain::chain_property_object )
+FC_REFLECT_DERIVED( graphene::chain::chain_property_object, (graphene::db::object),
+                    (chain_id)
+                    (immutable_parameters)
+                  )
 
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::chain_property_object )

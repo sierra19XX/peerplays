@@ -24,7 +24,7 @@
 #pragma once
 
 #include <graphene/chain/config.hpp>
-#include <graphene/chain/types.hpp>
+#include <graphene/chain/protocol/types.hpp>
 
 namespace graphene { namespace chain {
 
@@ -38,6 +38,11 @@ struct immutable_chain_parameters
 
 } } // graphene::chain
 
-FC_REFLECT_TYPENAME( graphene::chain::immutable_chain_parameters )
+FC_REFLECT_DERIVED( graphene::chain::immutable_chain_parameters, BOOST_PP_SEQ_NIL,
+   (min_committee_member_count)
+   (min_witness_count)
+   (num_special_accounts)
+   (num_special_assets)
+)
 
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::immutable_chain_parameters )

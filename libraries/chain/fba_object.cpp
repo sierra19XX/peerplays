@@ -101,3 +101,6 @@ bool fba_accumulator_object::is_configured( const database& db )const
 }
 
 } }
+
+GRAPHENE_EXTERNAL_SERIALIZATION( /* no extern */, graphene::chain::fba_accumulator_object )
+

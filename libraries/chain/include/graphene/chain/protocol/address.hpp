@@ -95,3 +95,5 @@ namespace std
 FC_REFLECT( graphene::chain::address, (addr) )
 
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::address )
+
+

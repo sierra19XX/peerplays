@@ -119,8 +119,6 @@ FC_REFLECT( graphene::chain::vesting_balance_withdraw_operation, (fee)(vesting_b
 FC_REFLECT(graphene::chain::linear_vesting_policy_initializer, (begin_timestamp)(vesting_cliff_seconds)(vesting_duration_seconds) )
 FC_REFLECT(graphene::chain::cdd_vesting_policy_initializer, (start_claim)(vesting_seconds) )
 FC_REFLECT_TYPENAME( graphene::chain::vesting_policy_initializer )
-FC_REFLECT_EMPTY( graphene::chain::instant_vesting_policy_initializer )
-FC_REFLECT_TYPENAME( graphene::chain::vesting_policy_initializer )
 
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::vesting_balance_create_operation::fee_parameters_type )
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::vesting_balance_withdraw_operation::fee_parameters_type )

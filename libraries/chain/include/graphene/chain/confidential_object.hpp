@@ -65,8 +65,7 @@ typedef generic_index<blinded_balance_object, blinded_balance_object_multi_index
 
 } } // graphene::chain
 
-MAP_OBJECT_ID_TO_TYPE(graphene::chain::blinded_balance_object)
-
-FC_REFLECT_TYPENAME( graphene::chain::blinded_balance_object )
+FC_REFLECT_DERIVED( graphene::chain::blinded_balance_object, (graphene::db::object),
+                                (commitment)(asset_id)(owner) )
 
 GRAPHENE_EXTERNAL_SERIALIZATION( extern, graphene::chain::blinded_balance_object )
