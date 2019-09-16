@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(last_voting_date)
       // we are going to vote for this witness
       auto witness1 = witness_id_type(1)(db);
 
-      auto stats_obj = alice_id(db).statistics(db);
+      auto stats_obj = db.get_account_stats_by_owner(alice_id);
       BOOST_CHECK_EQUAL(stats_obj.last_vote_time.sec_since_epoch(), 0);
 
       // alice votes
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(last_voting_date)
       auto now = db.head_block_time().sec_since_epoch();
 
       // last_vote_time is updated for alice
-      stats_obj = alice_id(db).statistics(db);
+      stats_obj = db.get_account_stats_by_owner(alice_id);
       BOOST_CHECK_EQUAL(stats_obj.last_vote_time.sec_since_epoch(), now);
 
    } FC_LOG_AND_RETHROW()

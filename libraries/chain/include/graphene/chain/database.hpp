@@ -276,6 +276,7 @@ namespace graphene { namespace chain {
          const dynamic_global_property_object&  get_dynamic_global_properties()const;
          const node_property_object&            get_node_properties()const;
          const fee_schedule&                    current_fee_schedule()const;
+         const account_statistics_object&       get_account_stats_by_owner( account_id_type owner )const;
          const std::vector<uint32_t>            get_winner_numbers( asset_id_type for_asset, uint32_t count_members, uint8_t count_winners ) const;
          std::vector<uint32_t>                  get_seeds( asset_id_type for_asset, uint8_t count_winners )const;
          uint64_t                               get_random_bits( uint64_t bound );
@@ -521,8 +522,8 @@ namespace graphene { namespace chain {
          void update_active_committee_members();
          void update_worker_votes();
       
-         template<class... Types>
-         void perform_account_maintenance(std::tuple<Types...> helpers);
+         template<class Type>
+         void perform_account_maintenance( Type tally_helper );
          ///@}
          ///@}
 
