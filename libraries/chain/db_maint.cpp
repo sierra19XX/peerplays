@@ -185,13 +185,27 @@ void database::update_active_witnesses()
 
    const global_property_object& gpo = get_global_properties();
 
-   const auto& all_witnesses = get_index_type<witness_index>().indices();
+   auto update_witness_total_votes = [this]( const witness_object& wit ) {
+      modify( wit, [this]( witness_object& obj )
+      {
+         obj.total_votes = _vote_tally_buffer[obj.vote_id];
+      });
+   };
 
-   for( const witness_object& wit : all_witnesses )
+   if( _track_standby_votes )
    {
-      modify( wit, [&]( witness_object& obj ){
-              obj.total_votes = _vote_tally_buffer[wit.vote_id];
-              });
+      const auto& all_witnesses = get_index_type<witness_index>().indices();
+      for( const witness_object& wit : all_witnesses )
+      {
+         update_witness_total_votes( wit );
+      }
+   }
+   else
+   {
+      for( const witness_object& wit : wits )
+      {
+         update_witness_total_votes( wit );
+      }
    }
 
    // Update witness authority
@@ -267,13 +281,29 @@ void database::update_active_committee_members()
    const chain_property_object& cpo = get_chain_properties();
    auto committee_members = sort_votable_objects<committee_member_index>(std::max(committee_member_count*2+1, (size_t)cpo.immutable_parameters.min_committee_member_count));
 
-   for( const committee_member_object& del : committee_members )
-   {
-      modify( del, [&]( committee_member_object& obj ){
-              obj.total_votes = _vote_tally_buffer[del.vote_id];
-              });
-   }
+   auto update_committee_member_total_votes = [this]( const committee_member_object& cm ) {
+      modify( cm, [this]( committee_member_object& obj )
+      {
+         obj.total_votes = _vote_tally_buffer[obj.vote_id];
+      });
+   };
 
+   if( _track_standby_votes )
+   {
+      const auto& all_committee_members = get_index_type<committee_member_index>().indices();
+      for( const committee_member_object& cm : all_committee_members )
+      {
+         update_committee_member_total_votes( cm );
+      }
+   }
+   else
+   {
+      for( const committee_member_object& cm : committee_members )
+      {
+         update_committee_member_total_votes( cm );
+      }
+   }
+   
    // Update committee authorities
    if( !committee_members.empty() )
    {

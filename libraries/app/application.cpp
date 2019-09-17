@@ -376,6 +376,11 @@ namespace detail {
          }
          _chain_db->add_checkpoints( loaded_checkpoints );
 
+         if( _options->count("enable-standby-votes-tracking") )
+         {
+            _chain_db->enable_standby_votes_tracking( _options->at("enable-standby-votes-tracking").as<bool>() );
+         }
+         
          bool replay = false;
          std::string replay_reason = "reason not provided";
 

@@ -127,6 +127,12 @@ database_fixture::database_fixture()
       options.insert(std::make_pair("track-account", boost::program_options::variable_value(track_account, false)));
    }
 
+   // standby votes tracking
+   if( boost::unit_test::framework::current_test_case().p_name.value == "track_votes_witnesses_disabled" ||
+       boost::unit_test::framework::current_test_case().p_name.value == "track_votes_committee_disabled") {
+      app.chain_database()->enable_standby_votes_tracking( false );
+   }
+   
    // app.initialize();
    ahplugin->plugin_set_app(&app);
    ahplugin->plugin_initialize(options);
