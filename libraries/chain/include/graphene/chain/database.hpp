@@ -263,7 +263,6 @@ namespace graphene { namespace chain {
          vector<witness_id_type> get_near_witness_schedule()const;
          void update_witness_schedule();
          void update_witness_schedule(const signed_block& next_block);
-         uint32_t update_witness_missed_blocks( const signed_block& b );
       
          void check_lottery_end_by_participants( asset_id_type asset_id );
          void check_ending_lotteries();
