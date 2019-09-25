@@ -411,6 +411,7 @@ namespace graphene { namespace chain {
    
    struct by_asset_balance;
    struct by_maintenance_flag;
+   struct by_account_asset;
 
    /**
     * @ingroup object_index
@@ -466,26 +467,6 @@ namespace graphene { namespace chain {
     * @ingroup object_index
     */
    typedef generic_index<account_object, account_multi_index_type> account_index;
-
-   struct by_owner;
-   struct by_maintenance_seq;
-
-   /**
-    * @ingroup object_index
-    */
-   typedef multi_index_container<
-      account_statistics_object,
-      indexed_by<
-         ordered_unique< tag<by_id>, member< object, object_id_type, &object::id > >,
-         ordered_unique< tag<by_owner>,
-                         member< account_statistics_object, account_id_type, &account_statistics_object::owner > >
-      >
-   > account_stats_multi_index_type;
-
-   /**
-    * @ingroup object_index
-    */
-   typedef generic_index<account_statistics_object, account_stats_multi_index_type> account_stats_index;
 
    struct by_dividend_payout_account{}; // use when calculating pending payouts
    struct by_dividend_account_payout{}; // use when doing actual payouts
