@@ -1651,7 +1651,7 @@ BOOST_AUTO_TEST_CASE( vesting_balance_withdraw_test )
       create_op.owner = owner;
       create_op.amount = amount;
       create_op.policy = cdd_vesting_policy_initializer(vesting_seconds);
-      create_op.balance_type = vesting_balance_type::unspecified;
+      create_op.balance_type = vesting_balance_type::normal;
       tx.operations.push_back( create_op );
       set_expiration( db, tx );
 
