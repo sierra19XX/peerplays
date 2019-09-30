@@ -516,7 +516,7 @@ BOOST_FIXTURE_TEST_CASE( account_history_pagination, cli_fixture )
                                                 "1.3.0", "Here are some CORE token for your new account", true);
       }
 
-       BOOST_CHECK(generate_block(app1));
+      BOOST_CHECK(generate_block(app1));
 
        // now get account history and make sure everything is there (and no duplicates)
       std::vector<graphene::wallet::operation_detail> history = con.wallet_api_ptr->get_account_history("jmjatlanta", 300);
@@ -790,7 +790,8 @@ graphene::wallet::plain_keys decrypt_keys( const std::string& password, const ve
    return fc::raw::unpack<graphene::wallet::plain_keys>( decrypted );
 }
 
-BOOST_AUTO_TEST_CASE( saving_keys_wallet_test ) {
+BOOST_AUTO_TEST_CASE( saving_keys_wallet_test ) 
+{
    cli_fixture cli;
 
    cli.con.wallet_api_ptr->import_balance( "nathan", cli.nathan_keys, true );
