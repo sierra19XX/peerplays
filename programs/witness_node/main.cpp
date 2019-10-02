@@ -27,6 +27,7 @@
 #include <graphene/witness/witness.hpp>
 #include <graphene/account_history/account_history_plugin.hpp>
 #include <graphene/accounts_list/accounts_list_plugin.hpp>
+#include <graphene/chain/config.hpp>
 #include <graphene/market_history/market_history_plugin.hpp>
 //#include <graphene/generate_genesis/generate_genesis_plugin.hpp>
 //#include <graphene/generate_uia_sharedrop_genesis/generate_uia_sharedrop_genesis.hpp>
@@ -38,10 +39,14 @@
 
 #include <fc/thread/thread.hpp>
 #include <fc/interprocess/signals.hpp>
+#include <fc/log/console_appender.hpp>
+#include <fc/log/logger_config.hpp>
+#include <fc/log/file_appender.hpp>
 
 #include <boost/filesystem.hpp>
 
 #include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 #include <boost/container/flat_set.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -309,4 +314,5 @@ fc::optional<fc::logging_config> load_logging_config_from_ini_file(const fc::pat
       else
          return fc::optional<fc::logging_config>();
    }
+   FC_RETHROW_EXCEPTIONS(warn, "")
 }
