@@ -1147,6 +1147,7 @@ BOOST_FIXTURE_TEST_CASE( rsf_missed_blocks, database_fixture )
 
 // the test written in 2015 should be revised, currently it is not possible to push block to db2
 // without skip_witness_signature | skip_witness_schedule_check | skip_authority_check
+/*
 BOOST_FIXTURE_TEST_CASE( transaction_invalidated_in_cache, database_fixture )
 {
    try
@@ -1295,6 +1296,7 @@ BOOST_FIXTURE_TEST_CASE( transaction_invalidated_in_cache, database_fixture )
       throw;
    }
 }
+*/
 
 BOOST_AUTO_TEST_CASE( genesis_reserve_ids )
 {
