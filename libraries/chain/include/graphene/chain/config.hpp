@@ -229,3 +229,4 @@
 #define GPOS_PERIOD                                         (60*60*24*30*6) // 6 months
 #define GPOS_SUBPERIOD                                      (60*60*24*30) // 1 month
 #define MIN_SON_MEMBER_COUNT                                15
+#define MIN_SON_PAY_DAILY_MAX                               200

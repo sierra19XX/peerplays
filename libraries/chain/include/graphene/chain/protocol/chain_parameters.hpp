@@ -44,6 +44,7 @@ namespace graphene { namespace chain {
       optional < uint32_t >           gpos_subperiod;
       optional < uint32_t >           gpos_period_start;
       optional < uint16_t >           son_count;
+      optional < uint32_t >           son_pay_daily_max;
    };
 
    struct chain_parameters
@@ -125,6 +126,9 @@ namespace graphene { namespace chain {
       inline uint16_t son_count()const {
          return extensions.value.son_count.valid() ? *extensions.value.son_count : MIN_SON_MEMBER_COUNT;
       }
+      inline uint16_t son_pay_daily_max()const {
+         return extensions.value.son_pay_daily_max.valid() ? *extensions.value.son_pay_daily_max : MIN_SON_PAY_DAILY_MAX;
+      }
    };
 
 } }  // graphene::chain
@@ -139,6 +143,7 @@ FC_REFLECT( graphene::chain::parameter_extension,
    (gpos_subperiod)
    (gpos_period_start)
    (son_count)
+   (son_pay_daily_max)
 )
 
 FC_REFLECT( graphene::chain::chain_parameters,

@@ -415,6 +415,18 @@ void database::process_budget()
       rec.witness_budget = witness_budget;
       available_funds -= witness_budget;
 
+      // Before making a budget we should pay out SONs for the last day
+      // To be implemented once son base code is available
+      // This function should check if its time to pay sons
+      // and modify the global son funds accordingly, whatever is left is passed on to next budget
+      //pay_sons()
+      share_type son_budget = gpo.parameters.son_pay_daily_max();
+      son_budget = std::min(son_budget, available_funds);
+      rec.son_budget = son_budget;
+      rec.leftover_son_funds = dpo.son_budget;
+      available_funds += rec.leftover_son_funds;
+      available_funds -= son_budget;
+
       fc::uint128_t worker_budget_u128 = gpo.parameters.worker_budget_per_day.value;
       worker_budget_u128 *= uint64_t(time_to_maint);
       worker_budget_u128 /= 60*60*24;
@@ -434,9 +446,11 @@ void database::process_budget()
 
       rec.supply_delta = rec.witness_budget
          + rec.worker_budget
+         + rec.son_budget
          - rec.leftover_worker_funds
          - rec.from_accumulated_fees
-         - rec.from_unused_witness_budget;
+         - rec.from_unused_witness_budget
+         - rec.leftover_son_funds;
 
       modify(core, [&]( asset_dynamic_data_object& _core )
       {
@@ -445,9 +459,11 @@ void database::process_budget()
          assert( rec.supply_delta ==
                                    witness_budget
                                  + worker_budget
+                                 + son_budget
                                  - leftover_worker_funds
                                  - _core.accumulated_fees
                                  - dpo.witness_budget
+                                 - dpo.son_budget
                                 );
          _core.accumulated_fees = 0;
       });
@@ -458,6 +474,7 @@ void database::process_budget()
          // available_funds, we replace it with witness_budget
          // instead of adding it.
          _dpo.witness_budget = witness_budget;
+         _dpo.son_budget = son_budget;
          _dpo.last_budget_time = now;
       });
 
