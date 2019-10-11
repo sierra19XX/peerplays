@@ -524,6 +524,11 @@ BOOST_FIXTURE_TEST_CASE( cli_get_son, cli_fixture )
       BOOST_CHECK(son_data.url == "http://sonmember");
       BOOST_CHECK(son_data.son_account == sonmember_acct.get_id());
 
+      // update SON
+      con.wallet_api_ptr->update_son("sonmember", "http://sonmember_updated", "", true);
+      son_data = con.wallet_api_ptr->get_son("sonmember");
+      BOOST_CHECK(son_data.url == "http://sonmember_updated");
+
    } catch( fc::exception& e ) {
       edump((e.to_detail_string()));
       throw;
