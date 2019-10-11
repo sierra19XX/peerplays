@@ -120,8 +120,9 @@ void database::update_worker_votes()
 void database::pay_sons()
 {
    time_point_sec now = head_block_time();
-   // Current requirement is that we have to pay every 24 hours, so the following check son_stats_index
-   if(now - get_dynamic_global_properties().last_son_payout_time >= fc::days(1)) {
+   const dynamic_global_property_object& dpo = get_dynamic_global_properties();
+   // Current requirement is that we have to pay every 24 hours, so the following check
+   if(now - dpo.last_son_payout_time >= fc::days(1)) {
       uint64_t total_txs_signed = 0;
       get_index_type<son_stats_index>().inspect_all_objects([this, &total_txs_signed](const object& o) {
          const son_statistics_object& s = static_cast<const son_statistics_object&>(o);
@@ -129,11 +130,35 @@ void database::pay_sons()
       });
 
       // Now pay off each SON proportional to the number of transactions signed.
-      get_index_type<son_stats_index>().inspect_all_objects([this, &total_txs_signed](const object& o) {
+      get_index_type<son_stats_index>().inspect_all_objects([this, &total_txs_signed, &dpo](const object& o) {
          const son_statistics_object& s = static_cast<const son_statistics_object&>(o);
-         total_txs_signed += s.txs_signed;
-      });
+         if(s.txs_signed > 0){
+            auto son_params = get_global_properties().parameters;
+            share_type pay = (s.txs_signed * son_params.son_pay_daily_max())/total_txs_signed;
 
+            const auto& idx = get_index_type<son_index>().indices().get<by_id>();
+            auto son_obj = idx.find( s.owner );
+            modify( *son_obj, [&]( son_object& _son_obj)
+            {
+               _son_obj.pay_son_fee(pay, *this);
+            });
+            //Remove the amount paid out to SON from global SON Budget
+            modify( dpo, [&]( dynamic_global_property_object& _dpo )
+            {
+               _dpo.son_budget -= pay;
+            } );
+            //Reset the tx counter in each son statistics object
+            modify( s, [&]( son_statistics_object& _s)
+            {
+               _s.txs_signed = 0;
+            });
+         }
+      });
+      //Not the last son pay out time
+      modify( dpo, [&]( dynamic_global_property_object& _dpo )
+      {
+         _dpo.last_son_payout_time = now;
+      });
    }
 }
 
@@ -529,10 +554,9 @@ void database::process_budget()
       share_type son_budget = 0;
       if(now >= HARDFORK_SON_TIME){
          // Before making a budget we should pay out SONs for the last day
-         // To be implemented once son base code is available
          // This function should check if its time to pay sons
          // and modify the global son funds accordingly, whatever is left is passed on to next budget
-         //pay_sons()
+         pay_sons();
          son_budget = gpo.parameters.son_pay_daily_max();
          son_budget = std::min(son_budget, available_funds);
          rec.son_budget = son_budget;
