@@ -64,6 +64,7 @@ struct vote_id_type
       committee,
       witness,
       worker,
+      son,
       VOTE_TYPE_COUNT
    };
 
@@ -141,12 +142,12 @@ namespace fc
 
 class variant;
 
-void to_variant( const graphene::chain::vote_id_type& var, fc::variant& vo );
-void from_variant( const fc::variant& var, graphene::chain::vote_id_type& vo );
+void to_variant( const graphene::chain::vote_id_type& var, fc::variant& vo, uint32_t max_depth = 1 );
+void from_variant( const fc::variant& var, graphene::chain::vote_id_type& vo, uint32_t max_depth = 1 );
 
 } // fc
 
 FC_REFLECT_TYPENAME( fc::flat_set<graphene::chain::vote_id_type> )
 
-FC_REFLECT_ENUM( graphene::chain::vote_id_type::vote_type, (witness)(committee)(worker)(VOTE_TYPE_COUNT) )
+FC_REFLECT_ENUM( graphene::chain::vote_id_type::vote_type, (witness)(committee)(worker)(son)(VOTE_TYPE_COUNT) )
 FC_REFLECT( graphene::chain::vote_id_type, (content) )

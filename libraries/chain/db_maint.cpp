@@ -117,6 +117,26 @@ void database::update_worker_votes()
    }
 }
 
+void database::pay_sons()
+{
+   time_point_sec now = head_block_time();
+   // Current requirement is that we have to pay every 24 hours, so the following check son_stats_index
+   if(now - get_dynamic_global_properties().last_son_payout_time >= fc::days(1)) {
+      uint64_t total_txs_signed = 0;
+      get_index_type<son_stats_index>().inspect_all_objects([this, &total_txs_signed](const object& o) {
+         const son_statistics_object& s = static_cast<const son_statistics_object&>(o);
+         total_txs_signed += s.txs_signed;
+      });
+
+      // Now pay off each SON proportional to the number of transactions signed.
+      get_index_type<son_stats_index>().inspect_all_objects([this, &total_txs_signed](const object& o) {
+         const son_statistics_object& s = static_cast<const son_statistics_object&>(o);
+         total_txs_signed += s.txs_signed;
+      });
+
+   }
+}
+
 void database::pay_workers( share_type& budget )
 {
 //   ilog("Processing payroll! Available budget is ${b}", ("b", budget));
@@ -253,7 +273,7 @@ void database::update_active_witnesses()
 void database::update_active_committee_members()
 { try {
    assert( _committee_count_histogram_buffer.size() > 0 );
-   share_type stake_target = (_total_voting_stake-_witness_count_histogram_buffer[0]) / 2;
+   share_type stake_target = (_total_voting_stake-_committee_count_histogram_buffer[0]) / 2;
 
    /// accounts that vote for 0 or 1 witness do not get to express an opinion on
    /// the number of witnesses to have (they abstain and are non-voting accounts)
@@ -324,6 +344,96 @@ void database::update_active_committee_members()
                      std::inserter(gp.active_committee_members, gp.active_committee_members.begin()),
                      [](const committee_member_object& d) { return d.id; });
    });
+} FC_CAPTURE_AND_RETHROW() }
+
+void database::update_active_sons()
+{ try {
+   assert( _son_count_histogram_buffer.size() > 0 );
+   share_type stake_target = (_total_voting_stake-_son_count_histogram_buffer[0]) / 2;
+
+   /// accounts that vote for 0 or 1 son do not get to express an opinion on
+   /// the number of sons to have (they abstain and are non-voting accounts)
+
+   share_type stake_tally = 0;
+
+   size_t son_count = 0;
+   if( stake_target > 0 )
+   {
+      while( (son_count < _son_count_histogram_buffer.size() - 1)
+             && (stake_tally <= stake_target) )
+      {
+         stake_tally += _son_count_histogram_buffer[++son_count];
+      }
+   }
+
+   const chain_property_object& cpo = get_chain_properties();
+   auto sons = sort_votable_objects<son_index>(std::max(son_count*2+1, (size_t)cpo.immutable_parameters.min_son_count));
+
+   const global_property_object& gpo = get_global_properties();
+
+   const auto& all_sons = get_index_type<son_index>().indices();
+
+   for( const son_object& son : all_sons )
+   {
+      modify( son, [&]( son_object& obj ){
+              obj.total_votes = _vote_tally_buffer[son.vote_id];
+              });
+   }
+
+   // Update SON authority
+   modify( get(GRAPHENE_SON_ACCOUNT_ID), [&]( account_object& a )
+   {
+      if( head_block_time() < HARDFORK_533_TIME )
+      {
+         uint64_t total_votes = 0;
+         map<account_id_type, uint64_t> weights;
+         a.active.weight_threshold = 0;
+         a.active.clear();
+
+         for( const son_object& son : sons )
+         {
+            weights.emplace(son.son_account, _vote_tally_buffer[son.vote_id]);
+            total_votes += _vote_tally_buffer[son.vote_id];
+         }
+
+         // total_votes is 64 bits. Subtract the number of leading low bits from 64 to get the number of useful bits,
+         // then I want to keep the most significant 16 bits of what's left.
+         int8_t bits_to_drop = std::max(int(boost::multiprecision::detail::find_msb(total_votes)) - 15, 0);
+         for( const auto& weight : weights )
+         {
+            // Ensure that everyone has at least one vote. Zero weights aren't allowed.
+            uint16_t votes = std::max((weight.second >> bits_to_drop), uint64_t(1) );
+            a.active.account_auths[weight.first] += votes;
+            a.active.weight_threshold += votes;
+         }
+
+         a.active.weight_threshold /= 2;
+         a.active.weight_threshold += 1;
+      }
+      else
+      {
+         vote_counter vc;
+         for( const son_object& son : sons )
+            vc.add( son.son_account, std::max(_vote_tally_buffer[son.vote_id], UINT64_C(1)) );
+         vc.finish( a.active );
+      }
+   } );
+
+   modify(gpo, [&]( global_property_object& gp ){
+      gp.active_sons.clear();
+      gp.active_sons.reserve(sons.size());
+      std::transform(sons.begin(), sons.end(),
+                     std::inserter(gp.active_sons, gp.active_sons.end()),
+                     [](const son_object& s) {
+         return s.id;
+      });
+   });
+
+   //const witness_schedule_object& wso = witness_schedule_id_type()(*this);
+   //modify(wso, [&](witness_schedule_object& _wso)
+   //{
+   //   _wso.scheduler.update(gpo.active_witnesses);
+   //});
 } FC_CAPTURE_AND_RETHROW() }
 
 void database::initialize_budget_record( fc::time_point_sec now, budget_record& rec )const
@@ -415,17 +525,21 @@ void database::process_budget()
       rec.witness_budget = witness_budget;
       available_funds -= witness_budget;
 
-      // Before making a budget we should pay out SONs for the last day
-      // To be implemented once son base code is available
-      // This function should check if its time to pay sons
-      // and modify the global son funds accordingly, whatever is left is passed on to next budget
-      //pay_sons()
-      share_type son_budget = gpo.parameters.son_pay_daily_max();
-      son_budget = std::min(son_budget, available_funds);
-      rec.son_budget = son_budget;
-      rec.leftover_son_funds = dpo.son_budget;
-      available_funds += rec.leftover_son_funds;
-      available_funds -= son_budget;
+      // We should not factor-in the son budget before SON HARDFORK
+      share_type son_budget = 0;
+      if(now >= HARDFORK_SON_TIME){
+         // Before making a budget we should pay out SONs for the last day
+         // To be implemented once son base code is available
+         // This function should check if its time to pay sons
+         // and modify the global son funds accordingly, whatever is left is passed on to next budget
+         //pay_sons()
+         son_budget = gpo.parameters.son_pay_daily_max();
+         son_budget = std::min(son_budget, available_funds);
+         rec.son_budget = son_budget;
+         rec.leftover_son_funds = dpo.son_budget;
+         available_funds += rec.leftover_son_funds;
+         available_funds -= son_budget;
+      }
 
       fc::uint128_t worker_budget_u128 = gpo.parameters.worker_budget_per_day.value;
       worker_budget_u128 *= uint64_t(time_to_maint);
@@ -638,7 +752,7 @@ void distribute_fba_balances( database& db )
 void create_buyback_orders( database& db )
 {
    const auto& bbo_idx = db.get_index_type< buyback_index >().indices().get<by_id>();
-   const auto& bal_idx = db.get_index_type< account_balance_index >().indices().get< by_account_asset >();
+   const auto& bal_idx = db.get_index_type< primary_index< account_balance_index > >().get_secondary_index< balances_by_account_index >();
 
    for( const buyback_object& bbo : bbo_idx )
    {
@@ -646,7 +760,6 @@ void create_buyback_orders( database& db )
       assert( asset_to_buy.buyback_account.valid() );
 
       const account_object& buyback_account = (*(asset_to_buy.buyback_account))(db);
-      asset_id_type next_asset = asset_id_type();
 
       if( !buyback_account.allowed_assets.valid() )
       {
@@ -654,16 +767,11 @@ void create_buyback_orders( database& db )
          continue;
       }
 
-      while( true )
+      for( const auto& entry : bal_idx.get_account_balances( buyback_account.id ) )
       {
-         auto it = bal_idx.lower_bound( boost::make_tuple( buyback_account.id, next_asset ) );
-         if( it == bal_idx.end() )
-            break;
-         if( it->owner != buyback_account.id )
-            break;
+         const auto* it = entry.second;
          asset_id_type asset_to_sell = it->asset_type;
          share_type amount_to_sell = it->balance;
-         next_asset = asset_to_sell + 1;
          if( asset_to_sell == asset_to_buy.id )
             continue;
          if( amount_to_sell == 0 )
@@ -742,120 +850,6 @@ void deprecate_annual_members( database& db )
    return;
 }
 
-double database::calculate_vesting_factor(const account_object& stake_account)
-{
-   // get last time voted form stats
-   const auto &stats = stake_account.statistics(*this);
-   fc::time_point_sec last_date_voted = stats.last_vote_time;
-
-   // get global data related to gpos
-   const auto &gpo = this->get_global_properties();
-   const auto vesting_period = gpo.parameters.gpos_period();
-   const auto vesting_subperiod = gpo.parameters.gpos_subperiod();
-   const auto period_start = fc::time_point_sec(gpo.parameters.gpos_period_start());
-
-   //  variables needed
-   const fc::time_point_sec period_end = period_start + vesting_period;
-   const auto number_of_subperiods = vesting_period / vesting_subperiod;
-   const auto now = this->head_block_time();
-   double vesting_factor;
-   auto seconds_since_period_start = now.sec_since_epoch() - period_start.sec_since_epoch();
-
-   FC_ASSERT(period_start <= now && now <= period_end);
-
-   // get in what sub period we are
-   uint32_t current_subperiod = 0;
-   std::list<uint32_t> period_list(number_of_subperiods);
-   std::iota(period_list.begin(), period_list.end(), 1);
-
-   std::for_each(period_list.begin(), period_list.end(),[&](uint32_t period) {
-      if(seconds_since_period_start >= vesting_subperiod * (period - 1) &&
-            seconds_since_period_start < vesting_subperiod * period)
-         current_subperiod = period;
-   });
-
-   if(current_subperiod == 0 || current_subperiod > number_of_subperiods) return 0;
-   if(last_date_voted < period_start) return 0;
-
-   double numerator = number_of_subperiods;
-
-   if(current_subperiod > 1) {
-      std::list<uint32_t> subperiod_list(current_subperiod - 1);
-      std::iota(subperiod_list.begin(), subperiod_list.end(), 2);
-      subperiod_list.reverse();
-
-      for(auto subperiod: subperiod_list)
-      {
-         numerator--;
-
-         auto last_period_start = period_start + fc::seconds(vesting_subperiod * (subperiod - 1));
-         auto last_period_end = period_start + fc::seconds(vesting_subperiod * (subperiod));
-
-         if (last_date_voted > last_period_start && last_date_voted <= last_period_end) {
-            numerator++;
-            break;
-         }
-      }
-   }
-   vesting_factor = numerator / number_of_subperiods;
-   return vesting_factor;
-}
-
-share_type credit_account(database& db, const account_id_type owner_id, const std::string owner_name,
-                          share_type remaining_amount_to_distribute,
-                          const share_type shares_to_credit, const asset_id_type payout_asset_type,
-                          const pending_dividend_payout_balance_for_holder_object_index& pending_payout_balance_index,
-                          const asset_id_type dividend_id) {
-
-   //wdump((delta_balance.value)(holder_balance)(total_balance_of_dividend_asset));
-   if (shares_to_credit.value) {
-
-      remaining_amount_to_distribute -= shares_to_credit;
-
-      dlog("Crediting account ${account} with ${amount}",
-           ("account", owner_name)
-                 ("amount", asset(shares_to_credit, payout_asset_type)));
-      auto pending_payout_iter =
-            pending_payout_balance_index.indices().get<by_dividend_payout_account>().find(
-                  boost::make_tuple(dividend_id, payout_asset_type,
-                                    owner_id));
-      if (pending_payout_iter ==
-          pending_payout_balance_index.indices().get<by_dividend_payout_account>().end())
-         db.create<pending_dividend_payout_balance_for_holder_object>(
-               [&](pending_dividend_payout_balance_for_holder_object &obj) {
-                  obj.owner = owner_id;
-                  obj.dividend_holder_asset_type = dividend_id;
-                  obj.dividend_payout_asset_type = payout_asset_type;
-                  obj.pending_balance = shares_to_credit;
-               });
-      else
-         db.modify(*pending_payout_iter,
-                   [&](pending_dividend_payout_balance_for_holder_object &pending_balance) {
-                      pending_balance.pending_balance += shares_to_credit;
-                   });
-   }
-   return remaining_amount_to_distribute;
-}
-
-void rolling_period_start(database& db)
-{
-   if(db.head_block_time() >= HARDFORK_GPOS_TIME)
-   {
-      auto gpo = db.get_global_properties();
-      auto period_start = db.get_global_properties().parameters.gpos_period_start();
-      auto vesting_period = db.get_global_properties().parameters.gpos_period();
-
-      auto now = db.head_block_time();
-      if(now.sec_since_epoch() > (period_start + vesting_period))
-      {
-         // roll
-         db.modify(db.get_global_properties(), [now](global_property_object& p) {
-            p.parameters.extensions.value.gpos_period_start =  now.sec_since_epoch();
-         });
-      }
-   }
-}
-
 // Schedules payouts from a dividend distribution account to the current holders of the
 // dividend-paying asset.  This takes any deposits made to the dividend distribution account
 // since the last time it was called, and distributes them to the current owners of the
@@ -871,8 +865,10 @@ void schedule_pending_dividend_balances(database& db,
 { try {
    dlog("Processing dividend payments for dividend holder asset type ${holder_asset} at time ${t}",
         ("holder_asset", dividend_holder_asset_obj.symbol)("t", db.head_block_time()));
+   auto balance_by_acc_index = db.get_index_type< primary_index< account_balance_index > >().get_secondary_index< balances_by_account_index >();
    auto current_distribution_account_balance_range = 
-      balance_index.indices().get<by_account_asset>().equal_range(boost::make_tuple(dividend_data.dividend_distribution_account));
+      //balance_index.indices().get<by_account_asset>().equal_range(boost::make_tuple(dividend_data.dividend_distribution_account));
+      balance_by_acc_index.get_account_balances(dividend_data.dividend_distribution_account);
    auto previous_distribution_account_balance_range =
       distributed_dividend_balance_index.indices().get<by_dividend_payout_asset>().equal_range(boost::make_tuple(dividend_holder_asset_obj.id));
    // the current range is now all current balances for the distribution account, sorted by asset_type
@@ -885,41 +881,34 @@ void schedule_pending_dividend_balances(database& db,
       balance_index.indices().get<by_asset_balance>().lower_bound(boost::make_tuple(dividend_holder_asset_obj.id));
    auto holder_balances_end =
       balance_index.indices().get<by_asset_balance>().upper_bound(boost::make_tuple(dividend_holder_asset_obj.id, share_type()));
+   uint32_t holder_account_count = std::distance(holder_balances_begin, holder_balances_end);
    uint64_t distribution_base_fee = gpo.parameters.current_fees->get<asset_dividend_distribution_operation>().distribution_base_fee;
    uint32_t distribution_fee_per_holder = gpo.parameters.current_fees->get<asset_dividend_distribution_operation>().distribution_fee_per_holder;
+   // the fee, in BTS, for distributing each asset in the account
+   uint64_t total_fee_per_asset_in_core = distribution_base_fee + holder_account_count * (uint64_t)distribution_fee_per_holder;
 
    std::map<account_id_type, share_type> vesting_amounts;
-
-   auto balance_type = vesting_balance_type::unspecified;
-   if(db.head_block_time() >= HARDFORK_GPOS_TIME)
-      balance_type = vesting_balance_type::gpos;
-
-   uint32_t holder_account_count = 0;
 #ifdef USE_VESTING_OBJECT_BY_ASSET_BALANCE_INDEX
    // get only once a collection of accounts that hold nonzero vesting balances of the dividend asset
    auto vesting_balances_begin =
-      vesting_index.indices().get<by_asset_balance>().lower_bound(boost::make_tuple(dividend_holder_asset_obj.id, balance_type));
+      vesting_index.indices().get<by_asset_balance>().lower_bound(boost::make_tuple(dividend_holder_asset_obj.id));
    auto vesting_balances_end =
-      vesting_index.indices().get<by_asset_balance>().upper_bound(boost::make_tuple(dividend_holder_asset_obj.id, balance_type, share_type()));
-
+      vesting_index.indices().get<by_asset_balance>().upper_bound(boost::make_tuple(dividend_holder_asset_obj.id, share_type()));
    for (const vesting_balance_object& vesting_balance_obj : boost::make_iterator_range(vesting_balances_begin, vesting_balances_end))
    {
         vesting_amounts[vesting_balance_obj.owner] += vesting_balance_obj.balance.amount;
-        ++holder_account_count;
-        dlog("Vesting balance for account: ${owner}, amount: ${amount}",
-             ("owner", vesting_balance_obj.owner(db).name)
-             ("amount", vesting_balance_obj.balance.amount));
+        //dlog("Vesting balance for account: ${owner}, amount: ${amount}",
+        //     ("owner", vesting_balance_obj.owner(db).name)
+        //     ("amount", vesting_balance_obj.balance.amount));
    }
 #else
    // get only once a collection of accounts that hold nonzero vesting balances of the dividend asset
    const auto& vesting_balances = vesting_index.indices().get<by_id>();
    for (const vesting_balance_object& vesting_balance_obj : vesting_balances)
    {
-        if (vesting_balance_obj.balance.asset_id == dividend_holder_asset_obj.id && vesting_balance_obj.balance.amount &&
-        vesting_balance_object.balance_type == balance_type)
+        if (vesting_balance_obj.balance.asset_id == dividend_holder_asset_obj.id && vesting_balance_obj.balance.amount)
         {
             vesting_amounts[vesting_balance_obj.owner] += vesting_balance_obj.balance.amount;
-            ++gpos_holder_account_count;
             dlog("Vesting balance for account: ${owner}, amount: ${amount}",
                  ("owner", vesting_balance_obj.owner(db).name)
                  ("amount", vesting_balance_obj.balance.amount));
@@ -927,40 +916,26 @@ void schedule_pending_dividend_balances(database& db,
    }
 #endif
 
-   if(db.head_block_time() < HARDFORK_GPOS_TIME)
-      holder_account_count = std::distance(holder_balances_begin, holder_balances_end);
-   // the fee, in BTS, for distributing each asset in the account
-   uint64_t total_fee_per_asset_in_core = distribution_base_fee + holder_account_count * (uint64_t)distribution_fee_per_holder;
-
-   auto current_distribution_account_balance_iter = current_distribution_account_balance_range.first;
+   auto current_distribution_account_balance_iter = current_distribution_account_balance_range.begin();
    auto previous_distribution_account_balance_iter = previous_distribution_account_balance_range.first;
    dlog("Current balances in distribution account: ${current}, Previous balances: ${previous}",
-        ("current", std::distance(current_distribution_account_balance_range.first, current_distribution_account_balance_range.second))
-        ("previous", std::distance(previous_distribution_account_balance_range.first, previous_distribution_account_balance_range.second)));
+        ("current", (int64_t)std::distance(current_distribution_account_balance_range.begin(), current_distribution_account_balance_range.end()))
+        ("previous", (int64_t)std::distance(previous_distribution_account_balance_range.first, previous_distribution_account_balance_range.second)));
 
    // when we pay out the dividends to the holders, we need to know the total balance of the dividend asset in all
    // accounts other than the distribution account (it would be silly to distribute dividends back to 
    // the distribution account)
    share_type total_balance_of_dividend_asset;
-   if(db.head_block_time() >= HARDFORK_GPOS_TIME && dividend_holder_asset_obj.symbol == GRAPHENE_SYMBOL) { // only core
-      for (const vesting_balance_object &holder_balance_object : boost::make_iterator_range(vesting_balances_begin,
-                                                                                            vesting_balances_end))
-         if (holder_balance_object.owner != dividend_data.dividend_distribution_account) {
-            total_balance_of_dividend_asset += holder_balance_object.balance.amount;
-         }
-   }
-   else {
-      for (const account_balance_object &holder_balance_object : boost::make_iterator_range(holder_balances_begin,
-                                                                                            holder_balances_end))
-         if (holder_balance_object.owner != dividend_data.dividend_distribution_account) {
-            total_balance_of_dividend_asset += holder_balance_object.balance;
-            auto itr = vesting_amounts.find(holder_balance_object.owner);
-            if (itr != vesting_amounts.end())
-               total_balance_of_dividend_asset += itr->second;
-         }
-   }
+   for (const account_balance_object& holder_balance_object : boost::make_iterator_range(holder_balances_begin, holder_balances_end))
+      if (holder_balance_object.owner != dividend_data.dividend_distribution_account)
+      {
+         total_balance_of_dividend_asset += holder_balance_object.balance;
+         auto itr = vesting_amounts.find(holder_balance_object.owner);
+         if (itr != vesting_amounts.end())
+             total_balance_of_dividend_asset += itr->second;
+      }
    // loop through all of the assets currently or previously held in the distribution account
-   while (current_distribution_account_balance_iter != current_distribution_account_balance_range.second ||
+   while (current_distribution_account_balance_iter != current_distribution_account_balance_range.end() ||
           previous_distribution_account_balance_iter != previous_distribution_account_balance_range.second)
    {
       try
@@ -971,15 +946,15 @@ void schedule_pending_dividend_balances(database& db,
          asset_id_type payout_asset_type;
 
          if (previous_distribution_account_balance_iter == previous_distribution_account_balance_range.second || 
-             current_distribution_account_balance_iter->asset_type < previous_distribution_account_balance_iter->dividend_payout_asset_type)
+             current_distribution_account_balance_iter->second->asset_type < previous_distribution_account_balance_iter->dividend_payout_asset_type)
          {
             // there are no more previous balances or there is no previous balance for this particular asset type
-            payout_asset_type = current_distribution_account_balance_iter->asset_type;
-            current_balance = current_distribution_account_balance_iter->balance;
+            payout_asset_type = current_distribution_account_balance_iter->second->asset_type;
+            current_balance = current_distribution_account_balance_iter->second->balance;
             idump((payout_asset_type)(current_balance));
          }
-         else if (current_distribution_account_balance_iter == current_distribution_account_balance_range.second || 
-                  previous_distribution_account_balance_iter->dividend_payout_asset_type < current_distribution_account_balance_iter->asset_type)
+         else if (current_distribution_account_balance_iter == current_distribution_account_balance_range.end() || 
+                  previous_distribution_account_balance_iter->dividend_payout_asset_type < current_distribution_account_balance_iter->second->asset_type)
          {
             // there are no more current balances or there is no current balance for this particular previous asset type
             payout_asset_type = previous_distribution_account_balance_iter->dividend_payout_asset_type;
@@ -989,8 +964,8 @@ void schedule_pending_dividend_balances(database& db,
          else
          {
             // we have both a previous and a current balance for this asset type
-            payout_asset_type = current_distribution_account_balance_iter->asset_type;
-            current_balance = current_distribution_account_balance_iter->balance;
+            payout_asset_type = current_distribution_account_balance_iter->second->asset_type;
+            current_balance = current_distribution_account_balance_iter->second->balance;
             previous_balance = previous_distribution_account_balance_iter->balance_at_last_maintenance_interval;
             idump((payout_asset_type)(current_balance)(previous_balance));
          }
@@ -1082,68 +1057,46 @@ void schedule_pending_dividend_balances(database& db,
                     ("total", total_balance_of_dividend_asset));
                share_type remaining_amount_to_distribute = delta_balance;
 
-               if(db.head_block_time() >= HARDFORK_GPOS_TIME && dividend_holder_asset_obj.symbol == GRAPHENE_SYMBOL) { // core only
-                  // credit each account with their portion, don't send any back to the dividend distribution account
-                  for (const vesting_balance_object &holder_balance_object : boost::make_iterator_range(
-                        vesting_balances_begin, vesting_balances_end)) {
-                     if (holder_balance_object.owner == dividend_data.dividend_distribution_account) continue;
+               // credit each account with their portion, don't send any back to the dividend distribution account
+               for (const account_balance_object& holder_balance_object : boost::make_iterator_range(holder_balances_begin, holder_balances_end))
+               {
+                  if (holder_balance_object.owner == dividend_data.dividend_distribution_account) continue;
 
-                     auto vesting_factor = db.calculate_vesting_factor(holder_balance_object.owner(db));
+                  auto holder_balance = holder_balance_object.balance;
 
-                     auto holder_balance = holder_balance_object.balance;
+                  auto itr = vesting_amounts.find(holder_balance_object.owner);
+                  if (itr != vesting_amounts.end())
+                      holder_balance += itr->second;
 
-                     fc::uint128_t amount_to_credit(delta_balance.value);
-                     amount_to_credit *= holder_balance.amount.value;
-                     amount_to_credit /= total_balance_of_dividend_asset.value;
-                     share_type full_shares_to_credit((int64_t) amount_to_credit.to_uint64());
-                     share_type shares_to_credit = (uint64_t) floor(full_shares_to_credit.value * vesting_factor);
+                  fc::uint128_t amount_to_credit(delta_balance.value);
+                  amount_to_credit *= holder_balance.value;
+                  amount_to_credit /= total_balance_of_dividend_asset.value;
+                  share_type shares_to_credit((int64_t)amount_to_credit.to_uint64());
+                  if (shares_to_credit.value)
+                  {
+                     wdump((delta_balance.value)(holder_balance)(total_balance_of_dividend_asset));
 
-                     if (shares_to_credit < full_shares_to_credit) {
-                        // Todo: sending results of decay to committee account, need to change to specified account
-                        dlog("Crediting committee_account with ${amount}",
-                             ("amount", asset(full_shares_to_credit - shares_to_credit, payout_asset_type)));
-                        db.adjust_balance(dividend_data.dividend_distribution_account,
-                                          -(full_shares_to_credit - shares_to_credit));
-                        db.adjust_balance(account_id_type(0), full_shares_to_credit - shares_to_credit);
-                     }
+                     remaining_amount_to_distribute -= shares_to_credit;
 
-                     remaining_amount_to_distribute = credit_account(db,
-                                                                     holder_balance_object.owner,
-                                                                     holder_balance_object.owner(db).name,
-                                                                     remaining_amount_to_distribute,
-                                                                     shares_to_credit,
-                                                                     payout_asset_type,
-                                                                     pending_payout_balance_index,
-                                                                     dividend_holder_asset_obj.id);
+                     dlog("Crediting account ${account} with ${amount}", 
+                          ("account", holder_balance_object.owner(db).name)
+                          ("amount", asset(shares_to_credit, payout_asset_type)));
+                     auto pending_payout_iter = 
+                        pending_payout_balance_index.indices().get<by_dividend_payout_account>().find(boost::make_tuple(dividend_holder_asset_obj.id, payout_asset_type, holder_balance_object.owner));
+                     if (pending_payout_iter == pending_payout_balance_index.indices().get<by_dividend_payout_account>().end())
+                        db.create<pending_dividend_payout_balance_for_holder_object>( [&]( pending_dividend_payout_balance_for_holder_object& obj ){
+                           obj.owner = holder_balance_object.owner;
+                           obj.dividend_holder_asset_type = dividend_holder_asset_obj.id;
+                           obj.dividend_payout_asset_type = payout_asset_type;
+                           obj.pending_balance = shares_to_credit;
+                        });
+                     else
+                        db.modify(*pending_payout_iter, [&]( pending_dividend_payout_balance_for_holder_object& pending_balance ){
+                           pending_balance.pending_balance += shares_to_credit;
+                        });
                   }
                }
-               else {
-                  // credit each account with their portion, don't send any back to the dividend distribution account
-                  for (const account_balance_object &holder_balance_object : boost::make_iterator_range(
-                        holder_balances_begin, holder_balances_end)) {
-                     if (holder_balance_object.owner == dividend_data.dividend_distribution_account) continue;
 
-                     auto holder_balance = holder_balance_object.balance;
-
-                     auto itr = vesting_amounts.find(holder_balance_object.owner);
-                     if (itr != vesting_amounts.end())
-                        holder_balance += itr->second;
-
-                     fc::uint128_t amount_to_credit(delta_balance.value);
-                     amount_to_credit *= holder_balance.value;
-                     amount_to_credit /= total_balance_of_dividend_asset.value;
-                     share_type shares_to_credit((int64_t) amount_to_credit.to_uint64());
-
-                     remaining_amount_to_distribute = credit_account(db,
-                                                                     holder_balance_object.owner,
-                                                                     holder_balance_object.owner(db).name,
-                                                                     remaining_amount_to_distribute,
-                                                                     shares_to_credit,
-                                                                     payout_asset_type,
-                                                                     pending_payout_balance_index,
-                                                                     dividend_holder_asset_obj.id);
-                  }
-               }
                for (const auto& pending_payout : pending_payout_balance_index.indices())
                   if (pending_payout.pending_balance.value)
                       dlog("Pending payout: ${account_name}   ->   ${amount}",
@@ -1217,10 +1170,10 @@ void schedule_pending_dividend_balances(database& db,
 
       // iterate
       if (previous_distribution_account_balance_iter == previous_distribution_account_balance_range.second || 
-          current_distribution_account_balance_iter->asset_type < previous_distribution_account_balance_iter->dividend_payout_asset_type)
+          current_distribution_account_balance_iter->second->asset_type < previous_distribution_account_balance_iter->dividend_payout_asset_type)
          ++current_distribution_account_balance_iter;
-      else if (current_distribution_account_balance_iter == current_distribution_account_balance_range.second || 
-               previous_distribution_account_balance_iter->dividend_payout_asset_type < current_distribution_account_balance_iter->asset_type)
+      else if (current_distribution_account_balance_iter == current_distribution_account_balance_range.end() || 
+               previous_distribution_account_balance_iter->dividend_payout_asset_type < current_distribution_account_balance_iter->second->asset_type)
          ++previous_distribution_account_balance_iter;
       else
       {
@@ -1240,6 +1193,7 @@ void process_dividend_assets(database& db)
    ilog("In process_dividend_assets time ${time}", ("time", db.head_block_time()));
 
    const account_balance_index& balance_index = db.get_index_type<account_balance_index>();
+   //const auto& balance_index = db.get_index_type< primary_index< account_balance_index > >().get_secondary_index< balances_by_account_index >();
    const vesting_balance_index& vbalance_index = db.get_index_type<vesting_balance_index>();
    const total_distributed_dividend_balance_object_index& distributed_dividend_balance_index = db.get_index_type<total_distributed_dividend_balance_object_index>();
    const pending_dividend_payout_balance_for_holder_object_index& pending_payout_balance_index = db.get_index_type<pending_dividend_payout_balance_for_holder_object_index>();
@@ -1264,10 +1218,10 @@ void process_dividend_assets(database& db)
                     ("holder_asset", dividend_holder_asset_obj.symbol));
 #ifndef NDEBUG
                // dump balances before the payouts for debugging
-               const auto& balance_idx = db.get_index_type<account_balance_index>().indices().get<by_account_asset>();
-               auto holder_account_balance_range = balance_idx.equal_range(boost::make_tuple(dividend_data.dividend_distribution_account));
-               for (const account_balance_object& holder_balance_object : boost::make_iterator_range(holder_account_balance_range.first, holder_account_balance_range.second))
-                  ilog("  Current balance: ${asset}", ("asset", asset(holder_balance_object.balance, holder_balance_object.asset_type)));
+               const auto& balance_index = db.get_index_type< primary_index< account_balance_index > >();
+               const auto& balances = balance_index.get_secondary_index< balances_by_account_index >().get_account_balances( dividend_data.dividend_distribution_account );
+               for( const auto balance : balances )
+                  ilog("  Current balance: ${asset}", ("asset", asset(balance.second->balance, balance.second->asset_type)));
 #endif
 
                // when we do the payouts, we first increase the balances in all of the receiving accounts
@@ -1403,8 +1357,6 @@ void database::perform_chain_maintenance(const signed_block& next_block, const g
    distribute_fba_balances(*this);
    create_buyback_orders(*this);
 
-   rolling_period_start(*this);
-
    process_dividend_assets(*this);
 
    struct vote_tally_helper {
@@ -1418,30 +1370,27 @@ void database::perform_chain_maintenance(const signed_block& next_block, const g
          d._vote_tally_buffer.resize(props.next_available_vote_id);
          d._witness_count_histogram_buffer.resize(props.parameters.maximum_witness_count / 2 + 1);
          d._committee_count_histogram_buffer.resize(props.parameters.maximum_committee_count / 2 + 1);
+         d._son_count_histogram_buffer.resize(props.parameters.maximum_son_count / 2 + 1);
          d._total_voting_stake = 0;
-
-         auto balance_type = vesting_balance_type::unspecified;
-         if(d.head_block_time() >= HARDFORK_GPOS_TIME)
-            balance_type = vesting_balance_type::gpos;
 
          const vesting_balance_index& vesting_index = d.get_index_type<vesting_balance_index>();
 #ifdef USE_VESTING_OBJECT_BY_ASSET_BALANCE_INDEX
          auto vesting_balances_begin =
-              vesting_index.indices().get<by_asset_balance>().lower_bound(boost::make_tuple(asset_id_type(), balance_type));
+              vesting_index.indices().get<by_asset_balance>().lower_bound(boost::make_tuple(asset_id_type()));
          auto vesting_balances_end =
-              vesting_index.indices().get<by_asset_balance>().upper_bound(boost::make_tuple(asset_id_type(), balance_type, share_type()));
+              vesting_index.indices().get<by_asset_balance>().upper_bound(boost::make_tuple(asset_id_type(), share_type()));
          for (const vesting_balance_object& vesting_balance_obj : boost::make_iterator_range(vesting_balances_begin, vesting_balances_end))
          {
             vesting_amounts[vesting_balance_obj.owner] += vesting_balance_obj.balance.amount;
-            dlog("Vesting balance for account: ${owner}, amount: ${amount}",
-                 ("owner", vesting_balance_obj.owner(d).name)
-                 ("amount", vesting_balance_obj.balance.amount));
+            //dlog("Vesting balance for account: ${owner}, amount: ${amount}",
+            //     ("owner", vesting_balance_obj.owner(d).name)
+            //     ("amount", vesting_balance_obj.balance.amount));
          }
 #else
          const auto& vesting_balances = vesting_index.indices().get<by_id>();
          for (const vesting_balance_object& vesting_balance_obj : vesting_balances)
          {
-            if (vesting_balance_obj.balance.asset_id == asset_id_type() && vesting_balance_obj.balance.amount && vesting_balance_obj.balance_type == balance_type)
+            if (vesting_balance_obj.balance.asset_id == asset_id_type() && vesting_balance_obj.balance.amount)
             {
                 vesting_amounts[vesting_balance_obj.owner] += vesting_balance_obj.balance.amount;
                 dlog("Vesting balance for account: ${owner}, amount: ${amount}",
@@ -1469,27 +1418,13 @@ void database::perform_chain_maintenance(const signed_block& next_block, const g
             const account_object& opinion_account = *opinion_account_ptr;
 
             const auto& stats = stake_account.statistics(d);
-            uint64_t voting_stake = 0;
+            uint64_t voting_stake = stats.total_core_in_orders.value
+                  + (stake_account.cashback_vb.valid() ? (*stake_account.cashback_vb)(d).balance.amount.value: 0)
+                  + d.get_balance(stake_account.get_id(), asset_id_type()).amount.value;
 
             auto itr = vesting_amounts.find(stake_account.id);
             if (itr != vesting_amounts.end())
                 voting_stake += itr->second.value;
-
-            if(d.head_block_time() >= HARDFORK_GPOS_TIME)
-            {
-               if (itr == vesting_amounts.end())
-                  return;
-
-               auto vesting_factor = d.calculate_vesting_factor(stake_account);
-               voting_stake = (uint64_t)floor(voting_stake * vesting_factor);
-            }
-            else
-            {
-               voting_stake += stats.total_core_in_orders.value
-                               + (stake_account.cashback_vb.valid() ? (*stake_account.cashback_vb)(d).balance.amount.value : 0)
-                               + d.get_balance(stake_account.get_id(), asset_id_type()).amount.value;
-            }
-
             for( vote_id_type id : opinion_account.options.votes )
             {
                uint32_t offset = id.instance();
@@ -1519,6 +1454,18 @@ void database::perform_chain_maintenance(const signed_block& next_block, const g
                //
                // same rationale as for witnesses
                d._committee_count_histogram_buffer[offset] += voting_stake;
+            }
+            if( opinion_account.options.num_son <= props.parameters.maximum_son_count )
+            {
+               uint16_t offset = std::min(size_t(opinion_account.options.num_son/2),
+                                          d._son_count_histogram_buffer.size() - 1);
+               // votes for a number greater than maximum_son_count
+               // are turned into votes for maximum_son_count.
+               //
+               // in particular, this takes care of the case where a
+               // member was voting for a high number, then the
+               // parameter was lowered.
+               d._son_count_histogram_buffer[offset] += voting_stake;
             }
 
             d._total_voting_stake += voting_stake;
@@ -1550,11 +1497,13 @@ void database::perform_chain_maintenance(const signed_block& next_block, const g
    };
    clear_canary a(_witness_count_histogram_buffer),
                 b(_committee_count_histogram_buffer),
+                d(_son_count_histogram_buffer),
                 c(_vote_tally_buffer);
 
    update_top_n_authorities(*this);
    update_active_witnesses();
    update_active_committee_members();
+   update_active_sons();
    update_worker_votes();
 
    modify(gpo, [this](global_property_object& p) {

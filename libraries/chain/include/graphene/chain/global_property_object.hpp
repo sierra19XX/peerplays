@@ -52,6 +52,8 @@ namespace graphene { namespace chain {
          vector<committee_member_id_type>   active_committee_members; // updated once per maintenance interval
          flat_set<witness_id_type>          active_witnesses; // updated once per maintenance interval
          // n.b. witness scheduling is done by witness_schedule object
+
+         flat_set<son_id_type>              active_sons; // updated once per maintenance interval
    };
 
    /**
@@ -77,6 +79,9 @@ namespace graphene { namespace chain {
          time_point_sec    next_maintenance_time;
          time_point_sec    last_budget_time;
          share_type        witness_budget;
+         //Last SON Payout time, it can be different to the maintenance interval time
+         time_point_sec    last_son_payout_time;
+         share_type        son_budget = 0;
          uint32_t          accounts_registered_this_interval = 0;
          /**
           *  Every time a block is missed this increases by
@@ -148,4 +153,5 @@ FC_REFLECT_DERIVED( graphene::chain::global_property_object, (graphene::db::obje
                     (next_available_vote_id)
                     (active_committee_members)
                     (active_witnesses)
+                    (active_sons)
                   )
