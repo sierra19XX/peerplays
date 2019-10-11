@@ -45,9 +45,7 @@ namespace graphene { namespace chain {
          vesting_balance_id_type pay_vb;
          son_statistics_id_type statistics;
 
-         void pay_son_fee(share_type pay, database& db) {
-            db.adjust_balance( son_account, pay );
-         }
+         void pay_son_fee(share_type pay, database& db);
    };
 
    struct by_account;
