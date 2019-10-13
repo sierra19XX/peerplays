@@ -154,7 +154,7 @@ void database::pay_sons()
             });
          }
       });
-      //Not the last son pay out time
+      //Note the last son pay out time
       modify( dpo, [&]( dynamic_global_property_object& _dpo )
       {
          _dpo.last_son_payout_time = now;
