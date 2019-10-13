@@ -444,6 +444,7 @@ FC_REFLECT_ENUM( graphene::chain::impl_object_type,
                  (impl_global_betting_statistics_object_type)
                  (impl_lottery_balance_object_type)
                  (impl_sweeps_vesting_balance_object_type)
+                 (impl_son_statistics_object_type)
                )
 
 FC_REFLECT_TYPENAME( graphene::chain::share_type )
