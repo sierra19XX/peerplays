@@ -1025,6 +1025,26 @@ BOOST_FIXTURE_TEST_CASE( select_top_fifteen_sons, cli_fixture )
    BOOST_TEST_MESSAGE("SON cli wallet tests end");
 }
 
+BOOST_AUTO_TEST_CASE( list_son )
+{
+   BOOST_TEST_MESSAGE("List SONs cli wallet tests begin");
+   try
+   {
+      INVOKE(create_sons);
+
+      auto res = con.wallet_api_ptr->list_sons("", 100);
+      BOOST_REQUIRE(res.size() == 2);
+      BOOST_CHECK(res.find("son1account") != res.end());
+      BOOST_CHECK(res.find("son2account") != res.end());
+
+   } catch( fc::exception& e ) {
+      BOOST_TEST_MESSAGE("SON cli wallet tests exception");
+      edump((e.to_detail_string()));
+      throw;
+   }
+   BOOST_TEST_MESSAGE("List SONs cli wallet tests end");
+}
+
    BOOST_AUTO_TEST_CASE( update_son_votes_test )
    {
       BOOST_TEST_MESSAGE("SON update_son_votes cli wallet tests begin");
