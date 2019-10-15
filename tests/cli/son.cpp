@@ -1175,6 +1175,29 @@ BOOST_AUTO_TEST_CASE( list_son )
       BOOST_TEST_MESSAGE("SON Vote cli wallet tests end");
   }
 
+
+BOOST_AUTO_TEST_CASE( related_functions )
+{
+   BOOST_TEST_MESSAGE("SON-related functions cli wallet tests begin");
+   try
+   {
+      global_property_object gpo = con.wallet_api_ptr->get_global_properties();
+      BOOST_CHECK(gpo.active_sons.size() == 0);
+
+      INVOKE(create_sons);
+
+      gpo = con.wallet_api_ptr->get_global_properties();
+      BOOST_CHECK(gpo.active_sons.size() == 2);
+
+   } catch( fc::exception& e ) {
+      BOOST_TEST_MESSAGE("SON cli wallet tests exception");
+      edump((e.to_detail_string()));
+      throw;
+   }
+   BOOST_TEST_MESSAGE("SON-related functions cli wallet tests end");
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
