@@ -1249,7 +1249,7 @@ namespace graphene { namespace net { namespace detail {
         for (const peer_connection_ptr& peer : _active_connections)
         {
           // only advertise to peers who are in sync with us
-           wdump((peer->peer_needs_sync_items_from_us));
+          idump((peer->peer_needs_sync_items_from_us));
           if( !peer->peer_needs_sync_items_from_us )
           {
             std::map<uint32_t, std::vector<item_hash_t> > items_to_advertise_by_type;
@@ -1257,7 +1257,7 @@ namespace graphene { namespace net { namespace detail {
             // or anything it has advertised to us
             // group the items we need to send by type, because we'll need to send one inventory message per type
             unsigned total_items_to_send_to_this_peer = 0;
-            wdump((inventory_to_advertise));
+            idump((inventory_to_advertise));
             for (const item_id& item_to_advertise : inventory_to_advertise)
             {
                auto adv_to_peer = peer->inventory_advertised_to_peer.find(item_to_advertise);
@@ -1276,9 +1276,9 @@ namespace graphene { namespace net { namespace detail {
               else
               {
                  if (adv_to_peer != peer->inventory_advertised_to_peer.end() )
-                    wdump( (*adv_to_peer) );
+                    idump( (*adv_to_peer) );
                  if (adv_to_us != peer->inventory_peer_advertised_to_us.end() )
-                    wdump( (*adv_to_us) );
+                    idump( (*adv_to_us) );
               }
             }
               dlog("advertising ${count} new item(s) of ${types} type(s) to peer ${endpoint}",
@@ -2278,7 +2278,7 @@ namespace graphene { namespace net { namespace detail {
       bool disconnect_from_inhibited_peer = false;
       // if our client doesn't have any items after the item the peer requested, it will send back
       // a list containing the last item the peer requested
-      wdump((reply_message)(fetch_blockchain_item_ids_message_received.blockchain_synopsis));
+      idump((reply_message)(fetch_blockchain_item_ids_message_received.blockchain_synopsis));
       if( reply_message.item_hashes_available.empty() )
         originating_peer->peer_needs_sync_items_from_us = false; /* I have no items in my blockchain */
       else if( !fetch_blockchain_item_ids_message_received.blockchain_synopsis.empty() &&
@@ -2935,7 +2935,7 @@ namespace graphene { namespace net { namespace detail {
 
       if( closing_connection_message_received.closing_due_to_error )
       {
-        elog( "Peer ${peer} is disconnecting us because of an error: ${msg}, exception: ${error}",
+        wlog( "Peer ${peer} is disconnecting us because of an error: ${msg}, exception: ${error}",
              ( "peer", originating_peer->get_remote_endpoint() )
              ( "msg", closing_connection_message_received.reason_for_closing )
              ( "error", closing_connection_message_received.error ) );
