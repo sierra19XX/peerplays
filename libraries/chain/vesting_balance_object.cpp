@@ -45,23 +45,33 @@ asset linear_vesting_policy::get_allowed_withdraw( const vesting_policy_context&
 
         if( elapsed_seconds >= vesting_cliff_seconds )
         {
-            share_type total_vested = 0;
-            if( elapsed_seconds < vesting_duration_seconds )
+            // BLOCKBACK-154 fix, Begin balance for linear vesting applies only to initial account balance from genesis
+            // So, for any GPOS vesting, the begin balance would be 0 and should be able to withdraw balance amount based on lockin period
+            if(begin_balance == 0)
             {
-                total_vested = (fc::uint128_t( begin_balance.value ) * elapsed_seconds / vesting_duration_seconds).to_uint64();
+               allowed_withdraw = ctx.balance.amount;
+               return asset( allowed_withdraw, ctx.balance.asset_id );
             }
             else
             {
-                total_vested = begin_balance;
+               share_type total_vested = 0;
+               if( elapsed_seconds < vesting_duration_seconds )
+               {
+                  total_vested = (fc::uint128_t( begin_balance.value ) * elapsed_seconds / vesting_duration_seconds).to_uint64();
+               }
+               else
+               {
+                  total_vested = begin_balance;
+               }
+               assert( total_vested >= 0 );
+
+               const share_type withdrawn_already = begin_balance - ctx.balance.amount;
+               assert( withdrawn_already >= 0 );
+
+               allowed_withdraw = total_vested - withdrawn_already;
+               assert( allowed_withdraw >= 0 );
             }
-            assert( total_vested >= 0 );
-
-            const share_type withdrawn_already = begin_balance - ctx.balance.amount;
-            assert( withdrawn_already >= 0 );
-
-            allowed_withdraw = total_vested - withdrawn_already;
-            assert( allowed_withdraw >= 0 );
-        }
+         }
     }
 
     return asset( allowed_withdraw, ctx.balance.asset_id );

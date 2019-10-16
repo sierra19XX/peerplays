@@ -30,6 +30,7 @@ test:
     - ./tests/cli_test
   tags:
     - builder
+<<<<<<< HEAD
     
 code_quality:
   stage: test
@@ -52,3 +53,5 @@ code_quality:
   except:
     variables:
       - $CODE_QUALITY_DISABLED
+=======
+>>>>>>> qa_gpos_18.04

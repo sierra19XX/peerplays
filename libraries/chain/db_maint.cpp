@@ -787,6 +787,13 @@ void schedule_pending_dividend_balances(database& db,
    uint64_t total_fee_per_asset_in_core = distribution_base_fee + holder_account_count * (uint64_t)distribution_fee_per_holder;
 
    std::map<account_id_type, share_type> vesting_amounts;
+
+   auto balance_type = vesting_balance_type::normal;
+   if(db.head_block_time() >= HARDFORK_GPOS_TIME)
+      balance_type = vesting_balance_type::gpos;
+
+   uint32_t holder_account_count = 0;
+
 #ifdef USE_VESTING_OBJECT_BY_ASSET_BALANCE_INDEX
    // get only once a collection of accounts that hold nonzero vesting balances of the dividend asset
    auto vesting_balances_begin =
@@ -1270,6 +1277,10 @@ void database::perform_chain_maintenance(const signed_block& next_block, const g
          d._witness_count_histogram_buffer.resize(props.parameters.maximum_witness_count / 2 + 1);
          d._committee_count_histogram_buffer.resize(props.parameters.maximum_committee_count / 2 + 1);
          d._total_voting_stake = 0;
+
+         auto balance_type = vesting_balance_type::normal;
+         if(d.head_block_time() >= HARDFORK_GPOS_TIME)
+            balance_type = vesting_balance_type::gpos;
 
          const vesting_balance_index& vesting_index = d.get_index_type<vesting_balance_index>();
 #ifdef USE_VESTING_OBJECT_BY_ASSET_BALANCE_INDEX

@@ -934,7 +934,8 @@ vector<vesting_balance_object> database_api_impl::get_vesting_balances( account_
       auto vesting_range = _db.get_index_type<vesting_balance_index>().indices().get<by_account>().equal_range(account_id);
       std::for_each(vesting_range.first, vesting_range.second,
                     [&result](const vesting_balance_object& balance) {
-                       result.emplace_back(balance);
+                        if(balance.balance.amount > 0)
+                           result.emplace_back(balance);
                     });
       return result;
    }

@@ -46,6 +46,7 @@ class vesting_balance_withdraw_evaluator : public evaluator<vesting_balance_with
 
         void_result do_evaluate( const vesting_balance_withdraw_operation& op );
         void_result do_apply( const vesting_balance_withdraw_operation& op );
+        virtual operation_result start_evaluate(transaction_evaluation_state& eval_state, const operation& op, bool apply);
 };
 
 } } // graphene::chain

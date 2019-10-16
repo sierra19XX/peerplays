@@ -140,6 +140,9 @@ namespace graphene { namespace chain {
          /// The vesting policy stores details on when funds vest, and controls when they may be withdrawn
          vesting_policy policy;
 
+         /// We can have 2 types of vesting, gpos and all the rest
+         vesting_balance_type balance_type = vesting_balance_type::normal;
+
          vesting_balance_object() {}
          
          asset_id_type get_asset_id() const { return balance.asset_id; }
@@ -186,6 +189,7 @@ namespace graphene { namespace chain {
            composite_key<
               vesting_balance_object,
               member_offset<vesting_balance_object, asset_id_type, (size_t) (offsetof(vesting_balance_object,balance) + offsetof(asset,asset_id))>,
+              member<vesting_balance_object, vesting_balance_type, &vesting_balance_object::balance_type>,
               member_offset<vesting_balance_object, share_type, (size_t) (offsetof(vesting_balance_object,balance) + offsetof(asset,amount))>
               //member<vesting_balance_object, account_id_type, &vesting_balance_object::owner>
               //member_offset<vesting_balance_object, account_id_type, (size_t) (offsetof(vesting_balance_object,owner))>
