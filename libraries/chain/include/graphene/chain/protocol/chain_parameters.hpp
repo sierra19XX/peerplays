@@ -126,6 +126,15 @@ namespace graphene { namespace chain {
       inline account_id_type sweeps_vesting_accumulator_account()const {
          return extensions.value.sweeps_vesting_accumulator_account.valid() ? *extensions.value.sweeps_vesting_accumulator_account : SWEEPS_ACCUMULATOR_ACCOUNT;
       }
+      inline uint32_t gpos_period()const {
+         return extensions.value.gpos_period.valid() ? *extensions.value.gpos_period : GPOS_PERIOD; /// total seconds of current gpos period
+      }
+      inline uint32_t gpos_subperiod()const {
+         return extensions.value.gpos_subperiod.valid() ? *extensions.value.gpos_subperiod : GPOS_SUBPERIOD; /// gpos_period % gpos_subperiod = 0
+      }
+      inline uint32_t gpos_period_start()const {
+         return extensions.value.gpos_period_start.valid() ? *extensions.value.gpos_period_start : HARDFORK_GPOS_TIME.sec_since_epoch(); /// current period start date
+      }
       inline uint32_t gpos_vesting_lockin_period()const {
          return extensions.value.gpos_vesting_lockin_period.valid() ? *extensions.value.gpos_vesting_lockin_period : GPOS_VESTING_LOCKIN_PERIOD; /// GPOS vesting lockin period
       }      

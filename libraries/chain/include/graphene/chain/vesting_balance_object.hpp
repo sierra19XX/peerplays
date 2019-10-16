@@ -24,6 +24,8 @@
 #pragma once
 
 #include <graphene/chain/protocol/asset.hpp>
+#include <graphene/chain/protocol/vesting.hpp>
+
 #include <graphene/db/object.hpp>
 #include <graphene/db/generic_index.hpp>
 
@@ -196,6 +198,7 @@ namespace graphene { namespace chain {
            >,
            composite_key_compare<
               std::less< asset_id_type >,
+              std::less< vesting_balance_type >,
               std::greater< share_type >
               //std::less< account_id_type >
            >
@@ -229,4 +232,5 @@ FC_REFLECT_DERIVED(graphene::chain::vesting_balance_object, (graphene::db::objec
                    (owner)
                    (balance)
                    (policy)
+                   (balance_type)
                   )
