@@ -417,6 +417,9 @@ BOOST_FIXTURE_TEST_CASE( create_new_account, cli_fixture )
 // Vote for two witnesses, and make sure they both stay there
 // after a maintenance block
 ///////////////////////
+
+// Todo: Removed by GPOS, refactor test.
+/*
 BOOST_FIXTURE_TEST_CASE( cli_vote_for_2_witnesses, cli_fixture )
 {
    try
@@ -462,6 +465,7 @@ BOOST_FIXTURE_TEST_CASE( cli_vote_for_2_witnesses, cli_fixture )
       throw;
    }
 }
+*/
 
 BOOST_FIXTURE_TEST_CASE( cli_get_signed_transaction_signers, cli_fixture )
 {
