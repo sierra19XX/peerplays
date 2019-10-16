@@ -122,19 +122,21 @@ void database::pay_sons()
    time_point_sec now = head_block_time();
    const dynamic_global_property_object& dpo = get_dynamic_global_properties();
    // Current requirement is that we have to pay every 24 hours, so the following check
-   if(now - dpo.last_son_payout_time >= fc::days(1)) {
+   if( dpo.son_budget.value > 0 && now - dpo.last_son_payout_time >= fc::days(1)) {
       uint64_t total_txs_signed = 0;
+      share_type son_budget = dpo.son_budget;
       get_index_type<son_stats_index>().inspect_all_objects([this, &total_txs_signed](const object& o) {
          const son_statistics_object& s = static_cast<const son_statistics_object&>(o);
          total_txs_signed += s.txs_signed;
       });
 
+
       // Now pay off each SON proportional to the number of transactions signed.
-      get_index_type<son_stats_index>().inspect_all_objects([this, &total_txs_signed, &dpo](const object& o) {
+      get_index_type<son_stats_index>().inspect_all_objects([this, &total_txs_signed, &dpo, &son_budget](const object& o) {
          const son_statistics_object& s = static_cast<const son_statistics_object&>(o);
          if(s.txs_signed > 0){
             auto son_params = get_global_properties().parameters;
-            share_type pay = (s.txs_signed * son_params.son_pay_daily_max())/total_txs_signed;
+            share_type pay = (s.txs_signed * son_budget.value)/total_txs_signed;
 
             const auto& idx = get_index_type<son_index>().indices().get<by_id>();
             auto son_obj = idx.find( s.owner );
@@ -471,6 +473,8 @@ void database::initialize_budget_record( fc::time_point_sec now, budget_record& 
    rec.from_accumulated_fees = core_dd.accumulated_fees;
    rec.from_unused_witness_budget = dpo.witness_budget;
 
+
+
    if(    (dpo.last_budget_time == fc::time_point_sec())
        || (now <= dpo.last_budget_time) )
    {
@@ -557,11 +561,11 @@ void database::process_budget()
          // This function should check if its time to pay sons
          // and modify the global son funds accordingly, whatever is left is passed on to next budget
          pay_sons();
+         rec.leftover_son_funds = dpo.son_budget;
+         available_funds += rec.leftover_son_funds;
          son_budget = gpo.parameters.son_pay_daily_max();
          son_budget = std::min(son_budget, available_funds);
          rec.son_budget = son_budget;
-         rec.leftover_son_funds = dpo.son_budget;
-         available_funds += rec.leftover_son_funds;
          available_funds -= son_budget;
       }
 

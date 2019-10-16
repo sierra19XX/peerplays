@@ -20,7 +20,7 @@ namespace graphene { namespace chain {
          static const uint8_t space_id = implementation_ids;
          static const uint8_t type_id  = impl_son_statistics_object_type;
 
-         account_id_type  owner;
+         son_id_type  owner;
          // Transactions signed since the last son payouts
          uint64_t txs_signed = 0;
    };
