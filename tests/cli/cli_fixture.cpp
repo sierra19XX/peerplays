@@ -7,6 +7,7 @@
 #include <graphene/account_history/account_history_plugin.hpp>
 #include <graphene/egenesis/egenesis.hpp>
 #include <graphene/chain/config.hpp>
+#include <graphene/chain/database.hpp>
 
 #include <fc/crypto/base58.hpp>
 
@@ -204,7 +205,7 @@ cli_fixture::~cli_fixture()
 bool cli_fixture::generate_maintenance_block() {
    try {
       fc::ecc::private_key committee_key = fc::ecc::private_key::regenerate(fc::sha256::hash(string("nathan")));
-      uint32_t skip = ~0;
+      uint32_t skip = ~database::skip_fork_db;
       auto db = app1->chain_database();
       auto maint_time = db->get_dynamic_global_properties().next_maintenance_time;
       auto slots_to_miss = db->get_slot_at_time(maint_time);
