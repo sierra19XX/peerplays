@@ -329,7 +329,6 @@ BOOST_FIXTURE_TEST_CASE( select_top_fifteen_sons, cli_fixture )
       BOOST_CHECK(generate_block(app1));
 
 
-
       // create sonaccount02
       bki = con.wallet_api_ptr->suggest_brain_key();
       BOOST_CHECK(!bki.brain_priv_key.empty());
@@ -1045,136 +1044,132 @@ BOOST_AUTO_TEST_CASE( list_son )
    BOOST_TEST_MESSAGE("List SONs cli wallet tests end");
 }
 
-   BOOST_AUTO_TEST_CASE( update_son_votes_test )
-   {
-      BOOST_TEST_MESSAGE("SON update_son_votes cli wallet tests begin");
-      try
-      {
-         INVOKE(create_sons);
+BOOST_AUTO_TEST_CASE( update_son_votes_test )
+{
+    BOOST_TEST_MESSAGE("SON update_son_votes cli wallet tests begin");
+    try
+    {
+       INVOKE(create_sons);
 
-         BOOST_TEST_MESSAGE("Vote for 2 accounts with update_son_votes");
+       BOOST_TEST_MESSAGE("Vote for 2 accounts with update_son_votes");
 
-         son_object son1_obj;
-         son_object son2_obj;
-         int son1_start_votes, son1_end_votes;
-         int son2_start_votes, son2_end_votes;
+       son_object son1_obj;
+       son_object son2_obj;
+       int son1_start_votes, son1_end_votes;
+       int son2_start_votes, son2_end_votes;
 
-         // Get votes at start
-         son1_obj = con.wallet_api_ptr->get_son("son1account");
-         son1_start_votes = son1_obj.total_votes;
-         son2_obj = con.wallet_api_ptr->get_son("son2account");
-         son2_start_votes = son2_obj.total_votes;
+       // Get votes at start
+       son1_obj = con.wallet_api_ptr->get_son("son1account");
+       son1_start_votes = son1_obj.total_votes;
+       son2_obj = con.wallet_api_ptr->get_son("son2account");
+       son2_start_votes = son2_obj.total_votes;
 
-         std::vector<std::string> accepted;
-         std::vector<std::string> rejected;
-         signed_transaction update_votes_tx;
+       std::vector<std::string> accepted;
+       std::vector<std::string> rejected;
+       signed_transaction update_votes_tx;
 
-         // Vote for both SONs
-         accepted.clear();
-         rejected.clear();
-         accepted.push_back("son1account");
-         accepted.push_back("son2account");
-         update_votes_tx = con.wallet_api_ptr->update_son_votes("nathan", accepted,
-                                                                rejected, 15, true);
-         BOOST_CHECK(generate_block());
-         BOOST_CHECK(generate_maintenance_block());
+       // Vote for both SONs
+       accepted.clear();
+       rejected.clear();
+       accepted.push_back("son1account");
+       accepted.push_back("son2account");
+       update_votes_tx = con.wallet_api_ptr->update_son_votes("nathan", accepted,
+                                                              rejected, 15, true);
+       BOOST_CHECK(generate_block());
+       BOOST_CHECK(generate_maintenance_block());
 
-         // Verify the votes
-         son1_obj = con.wallet_api_ptr->get_son("son1account");
-         son1_end_votes = son1_obj.total_votes;
-         BOOST_CHECK(son1_end_votes > son1_start_votes);
-         son1_start_votes = son1_end_votes;
-         son2_obj = con.wallet_api_ptr->get_son("son2account");
-         son2_end_votes = son2_obj.total_votes;
-         BOOST_CHECK(son2_end_votes > son2_start_votes);
-         son2_start_votes = son2_end_votes;
+       // Verify the votes
+       son1_obj = con.wallet_api_ptr->get_son("son1account");
+       son1_end_votes = son1_obj.total_votes;
+       BOOST_CHECK(son1_end_votes > son1_start_votes);
+       son1_start_votes = son1_end_votes;
+       son2_obj = con.wallet_api_ptr->get_son("son2account");
+       son2_end_votes = son2_obj.total_votes;
+       BOOST_CHECK(son2_end_votes > son2_start_votes);
+       son2_start_votes = son2_end_votes;
 
 
-         // Withdraw vote for SON 1
-         accepted.clear();
-         rejected.clear();
-         rejected.push_back("son1account");
-         update_votes_tx = con.wallet_api_ptr->update_son_votes("nathan", accepted,
-                                                                rejected, 15, true);
-         BOOST_CHECK(generate_block());
-         BOOST_CHECK(generate_maintenance_block());
+       // Withdraw vote for SON 1
+       accepted.clear();
+       rejected.clear();
+       rejected.push_back("son1account");
+       update_votes_tx = con.wallet_api_ptr->update_son_votes("nathan", accepted,
+                                                              rejected, 15, true);
+       BOOST_CHECK(generate_maintenance_block());
 
-         // Verify the votes
-         son1_obj = con.wallet_api_ptr->get_son("son1account");
-         son1_end_votes = son1_obj.total_votes;
-         BOOST_CHECK(son1_end_votes < son1_start_votes);
-         son1_start_votes = son1_end_votes;
-         son2_obj = con.wallet_api_ptr->get_son("son2account");
-         // voice distribution changed, SON2 now has all voices
-         son2_end_votes = son2_obj.total_votes;
-         BOOST_CHECK(son2_end_votes > son2_start_votes);
-         son2_start_votes = son2_end_votes;
+       // Verify the votes
+       son1_obj = con.wallet_api_ptr->get_son("son1account");
+       son1_end_votes = son1_obj.total_votes;
+       BOOST_CHECK(son1_end_votes < son1_start_votes);
+       son1_start_votes = son1_end_votes;
+       son2_obj = con.wallet_api_ptr->get_son("son2account");
+       // voice distribution changed, SON2 now has all voices
+       son2_end_votes = son2_obj.total_votes;
+       BOOST_CHECK(son2_end_votes > son2_start_votes);
+       son2_start_votes = son2_end_votes;
 
-         // Try to reject incorrect SON
-         accepted.clear();
-         rejected.clear();
-         rejected.push_back("son1accnt");
-         BOOST_CHECK_THROW(update_votes_tx = con.wallet_api_ptr->update_son_votes("nathan", accepted,
-                                                                rejected, 15, true), fc::exception);
-         BOOST_CHECK(generate_block());
-         BOOST_CHECK(generate_maintenance_block());
+       // Try to reject incorrect SON
+       accepted.clear();
+       rejected.clear();
+       rejected.push_back("son1accnt");
+       BOOST_CHECK_THROW(update_votes_tx = con.wallet_api_ptr->update_son_votes("nathan", accepted,
+                                                              rejected, 15, true), fc::exception);
+       BOOST_CHECK(generate_block());
 
-         // Verify the votes
-         son1_obj = con.wallet_api_ptr->get_son("son1account");
-         son1_end_votes = son1_obj.total_votes;
-         BOOST_CHECK(son1_end_votes == son1_start_votes);
-         son1_start_votes = son1_end_votes;
-         son2_obj = con.wallet_api_ptr->get_son("son2account");
-         son2_end_votes = son2_obj.total_votes;
-         BOOST_CHECK(son2_end_votes == son2_start_votes);
-         son2_start_votes = son2_end_votes;
+       // Verify the votes
+       son1_obj = con.wallet_api_ptr->get_son("son1account");
+       son1_end_votes = son1_obj.total_votes;
+       BOOST_CHECK(son1_end_votes == son1_start_votes);
+       son1_start_votes = son1_end_votes;
+       son2_obj = con.wallet_api_ptr->get_son("son2account");
+       son2_end_votes = son2_obj.total_votes;
+       BOOST_CHECK(son2_end_votes == son2_start_votes);
+       son2_start_votes = son2_end_votes;
 
-         // Reject SON2
-         accepted.clear();
-         rejected.clear();
-         rejected.push_back("son2account");
-         update_votes_tx = con.wallet_api_ptr->update_son_votes("nathan", accepted,
-                                                                rejected, 15, true);
-         BOOST_CHECK(generate_block());
-         BOOST_CHECK(generate_maintenance_block());
+       // Reject SON2
+       accepted.clear();
+       rejected.clear();
+       rejected.push_back("son2account");
+       update_votes_tx = con.wallet_api_ptr->update_son_votes("nathan", accepted,
+                                                              rejected, 15, true);
+       BOOST_CHECK(generate_maintenance_block());
 
-         // Verify the votes
-         son1_obj = con.wallet_api_ptr->get_son("son1account");
-         son1_end_votes = son1_obj.total_votes;
-         BOOST_CHECK(son1_end_votes > son1_start_votes);
-         son1_start_votes = son1_end_votes;
-         son2_obj = con.wallet_api_ptr->get_son("son2account");
-         son2_end_votes = son2_obj.total_votes;
-         BOOST_CHECK(son2_end_votes < son2_start_votes);
-         son2_start_votes = son2_end_votes;
+       // Verify the votes
+       son1_obj = con.wallet_api_ptr->get_son("son1account");
+       son1_end_votes = son1_obj.total_votes;
+       BOOST_CHECK(son1_end_votes == son1_start_votes);
+       son1_start_votes = son1_end_votes;
+       son2_obj = con.wallet_api_ptr->get_son("son2account");
+       son2_end_votes = son2_obj.total_votes;
+       BOOST_CHECK(son2_end_votes < son2_start_votes);
+       son2_start_votes = son2_end_votes;
 
-         // Try to accept and reject the same SON
-         accepted.clear();
-         rejected.clear();
-         rejected.push_back("son1accnt");
-         accepted.push_back("son1accnt");
-         BOOST_REQUIRE_THROW(update_votes_tx = con.wallet_api_ptr->update_son_votes("nathan", accepted,
-                                                                rejected, 15, true), fc::exception);
-         BOOST_CHECK(generate_block());
-         BOOST_CHECK(generate_maintenance_block());
+       // Try to accept and reject the same SON
+       accepted.clear();
+       rejected.clear();
+       rejected.push_back("son1accnt");
+       accepted.push_back("son1accnt");
+       BOOST_REQUIRE_THROW(update_votes_tx = con.wallet_api_ptr->update_son_votes("nathan", accepted,
+                                                              rejected, 15, true), fc::exception);
+       BOOST_CHECK(generate_maintenance_block());
 
-         // Verify the votes
-         son1_obj = con.wallet_api_ptr->get_son("son1account");
-         son1_end_votes = son1_obj.total_votes;
-         BOOST_CHECK(son1_end_votes == son1_start_votes);
-         son1_start_votes = son1_end_votes;
-         son2_obj = con.wallet_api_ptr->get_son("son2account");
-         son2_end_votes = son2_obj.total_votes;
-         BOOST_CHECK(son2_end_votes == son2_start_votes);
-         son2_start_votes = son2_end_votes;
-      } catch( fc::exception& e ) {
-         BOOST_TEST_MESSAGE("SON cli wallet tests exception");
-         edump((e.to_detail_string()));
-         throw;
-      }
-      BOOST_TEST_MESSAGE("SON Vote cli wallet tests end");
-  }
+       // Verify the votes
+       son1_obj = con.wallet_api_ptr->get_son("son1account");
+       son1_end_votes = son1_obj.total_votes;
+       BOOST_CHECK(son1_end_votes == son1_start_votes);
+       son1_start_votes = son1_end_votes;
+       son2_obj = con.wallet_api_ptr->get_son("son2account");
+       son2_end_votes = son2_obj.total_votes;
+       BOOST_CHECK(son2_end_votes == son2_start_votes);
+       son2_start_votes = son2_end_votes;
 
+    } catch( fc::exception& e ) {
+       BOOST_TEST_MESSAGE("SON cli wallet tests exception");
+       edump((e.to_detail_string()));
+       throw;
+    }
+    BOOST_TEST_MESSAGE("SON update_son_votes cli wallet tests end");
+}
 
 BOOST_AUTO_TEST_CASE( related_functions )
 {
