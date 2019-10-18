@@ -179,6 +179,12 @@ BOOST_AUTO_TEST_CASE( cli_update_son )
       son_data = con.wallet_api_ptr->get_son("sonmember");
       BOOST_CHECK(son_data.url == "http://sonmember_updated");
 
+      // update SON signing key
+      con.wallet_api_ptr->update_son("sonmember", "http://sonmember_updated2", "TEST6Yaq5ZNTTkMM2kBBzV5jktr8ETsniCC3bnVD7eFmegRrLXfGGG", true);
+      son_data = con.wallet_api_ptr->get_son("sonmember");
+      BOOST_CHECK(son_data.url == "http://sonmember_updated2");
+      BOOST_CHECK(std::string(son_data.signing_key) == "TEST6Yaq5ZNTTkMM2kBBzV5jktr8ETsniCC3bnVD7eFmegRrLXfGGG");
+
    } catch( fc::exception& e ) {
       edump((e.to_detail_string()));
       throw;
