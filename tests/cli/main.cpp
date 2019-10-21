@@ -23,6 +23,8 @@
  */
 #include "cli_fixture.hpp"
 
+#include <fc/smart_ref_impl.hpp>
+
 #define BOOST_TEST_MODULE Test Application
 #include <boost/test/included/unit_test.hpp>
 
