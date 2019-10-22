@@ -24,12 +24,12 @@ class son_proposal_object : public abstract_object<son_proposal_object>
       son_proposal_type         proposal_type;
 };
 
-//struct by_proposal;
-//struct by_type;
+struct by_proposal;
 using son_proposal_multi_index_container = multi_index_container<
     son_proposal_object,
     indexed_by<
-       ordered_unique< tag< by_id >, member< object, object_id_type, &object::id > >
+       ordered_unique< tag< by_id >, member< object, object_id_type, &object::id > >,
+       ordered_unique< tag< by_proposal >, member< son_proposal_object, proposal_id_type, &son_proposal_object::proposal_id > >
     >
 >;
 using son_proposal_index = generic_index<son_proposal_object, son_proposal_multi_index_container>;

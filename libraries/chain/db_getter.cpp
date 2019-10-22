@@ -206,4 +206,43 @@ signed_transaction database::create_signed_transaction( const fc::ecc::private_k
    return processed_trx;
 }
 
+void database::process_son_proposals( const witness_object& current_witness, const fc::ecc::private_key& private_key )
+{
+   const auto& son_proposal_idx = get_index_type<son_proposal_index>().indices().get< by_id >();
+   const auto& proposal_idx = get_index_type<proposal_index>().indices().get< by_id >();
+
+   auto approve_proposal = [ & ]( const proposal_id_type& id )
+   {
+      proposal_update_operation puo;
+      puo.fee_paying_account = current_witness.witness_account;
+      puo.proposal = id;
+      puo.active_approvals_to_add = { current_witness.witness_account };
+      _pending_tx.insert( _pending_tx.begin(), create_signed_transaction( private_key, puo ) );
+   };
+
+   for( auto& son_proposal : son_proposal_idx )
+   {
+      const auto& proposal = proposal_idx.find( son_proposal.proposal_id );
+      FC_ASSERT( proposal != proposal_idx.end() );
+      if( proposal->proposer == current_witness.witness_account)
+      {
+         approve_proposal( proposal->id );
+      }
+   }
+}
+
+void database::remove_son_proposal( const proposal_object& proposal )
+{ try {
+   if( proposal.proposed_transaction.operations.size() == 1 &&
+     ( proposal.proposed_transaction.operations.back().which() == operation::tag<son_delete_operation>::value) )
+   {
+      const auto& son_proposal_idx = get_index_type<son_proposal_index>().indices().get<by_proposal>();
+      auto son_proposal_itr = son_proposal_idx.find( proposal.id );
+      if( son_proposal_itr == son_proposal_idx.end() ) {
+         return;
+      }
+      remove( *son_proposal_itr );
+   }
+} FC_CAPTURE_AND_RETHROW( (proposal) ) }
+
 } }
