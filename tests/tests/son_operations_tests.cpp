@@ -142,6 +142,7 @@ try {
       son_delete_operation op;
       op.owner_account = alice_id;
       op.son_id = son_id_type(0);
+      op.payer = alice_id;
 
       trx.operations.push_back(op);
       sign(trx, alice_private_key);
@@ -205,6 +206,7 @@ try {
       son_delete_operation op;
       op.owner_account = bob_id;
       op.son_id = son_id_type(0);
+      op.payer = bob_id;
 
       trx.operations.push_back(op);
       sign(trx, bob_private_key);

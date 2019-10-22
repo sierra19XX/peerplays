@@ -1918,6 +1918,7 @@ public:
       son_delete_operation son_delete_op;
       son_delete_op.son_id = son.id;
       son_delete_op.owner_account = son.son_account;
+      son_delete_op.payer = son.son_account;
 
       signed_transaction tx;
       tx.operations.push_back( son_delete_op );
