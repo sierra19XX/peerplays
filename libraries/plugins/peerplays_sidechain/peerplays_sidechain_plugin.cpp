@@ -1,10 +1,14 @@
 #include <graphene/peerplays_sidechain/peerplays_sidechain_plugin.hpp>
 
+#include <fc/log/logger.hpp>
+#include <graphene/peerplays_sidechain/sidechain_net_manager.hpp>
+
+namespace bpo = boost::program_options;
+
 namespace graphene { namespace peerplays_sidechain {
 
 namespace detail
 {
-
 
 class peerplays_sidechain_plugin_impl
 {
@@ -16,8 +20,8 @@ class peerplays_sidechain_plugin_impl
 
       peerplays_sidechain_plugin& _self;
 
-      uint32_t parameter;
-      uint32_t optional_parameter;
+      peerplays_sidechain::sidechain_net_manager _net_manager;
+
 };
 
 peerplays_sidechain_plugin_impl::~peerplays_sidechain_plugin_impl()
@@ -48,8 +52,11 @@ void peerplays_sidechain_plugin::plugin_set_program_options(
    )
 {
    cli.add_options()
-         ("parameter", boost::program_options::value<uint32_t>(), "Parameter")
-         ("optional-parameter", boost::program_options::value<uint32_t>(), "Optional parameter")
+         ("bitcoin-node-ip", bpo::value<string>()->implicit_value("127.0.0.1"), "IP address of Bitcoin node")
+         ("bitcoin-node-zmq-port", bpo::value<uint32_t>()->implicit_value(28332), "ZMQ port of Bitcoin node")
+         ("bitcoin-node-rpc-port", bpo::value<uint32_t>()->implicit_value(18332), "RPC port of Bitcoin node")
+         ("bitcoin-node-rpc-user", bpo::value<string>(), "Bitcoin RPC user")
+         ("bitcoin-node-rpc-password", bpo::value<string>(), "Bitcoin RPC password")
          ;
    cfg.add(cli);
 }
@@ -58,11 +65,12 @@ void peerplays_sidechain_plugin::plugin_initialize(const boost::program_options:
 {
    ilog("peerplays sidechain plugin:  plugin_initialize()");
 
-   if (options.count("parameter")) {
-       my->parameter = options["optional-parameter"].as<uint32_t>();
-   }
-   if (options.count("optional-parameter")) {
-       my->optional_parameter = options["optional-parameter"].as<uint32_t>();
+   if( options.count( "bitcoin-node-ip" ) && options.count( "bitcoin-node-zmq-port" ) && options.count( "bitcoin-node-rpc-port" )
+      && options.count( "bitcoin-node-rpc-user" ) && options.count( "bitcoin-node-rpc-password" ) )
+   {
+      my->_net_manager.create_handler(networks::bitcoin, options);
+   } else {
+      wlog("Haven't set up bitcoin sidechain parameters");
    }
 }
 
@@ -71,4 +79,5 @@ void peerplays_sidechain_plugin::plugin_startup()
    ilog("peerplays sidechain plugin:  plugin_startup()");
 }
 
-} }
+} } // graphene::peerplays_sidechain
+
