@@ -78,14 +78,20 @@ public:
         BOOST_CHECK(fixture_.generate_block());
 
         // create deposit vesting
-        fixture_.con.wallet_api_ptr->create_vesting(account_name, "50", "son", true);
+        fixture_.con.wallet_api_ptr->create_vesting(account_name, "50000000", "son", true);
         BOOST_CHECK(fixture_.generate_block());
 
-        // check deposit is here
-        auto deposits = fixture_.con.wallet_api_ptr->get_vesting_balances(account_name);
-        BOOST_CHECK(deposits.size() == 1);
+        // create pay_vb vesting
+        fixture_.con.wallet_api_ptr->create_vesting(account_name, "1000000", "normal", true);
+        BOOST_CHECK(fixture_.generate_block());
 
-        create_tx = fixture_.con.wallet_api_ptr->create_son(account_name, son_url, true);
+        // check deposits are here
+        auto deposits = fixture_.con.wallet_api_ptr->get_vesting_balances(account_name);
+        BOOST_CHECK(deposits.size() == 2);
+
+        create_tx = fixture_.con.wallet_api_ptr->create_son(account_name, son_url,
+                                                            deposits[0].id, deposits[1].id,
+                                                            true);
 
         if (generate_maintenance)
             BOOST_CHECK(fixture_.generate_maintenance_block());

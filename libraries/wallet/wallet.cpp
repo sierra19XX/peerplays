@@ -1860,6 +1860,8 @@ public:
 
    signed_transaction create_son(string owner_account,
                                  string url,
+                                 vesting_balance_id_type deposit_id,
+                                 vesting_balance_id_type pay_vb_id,
                                  bool broadcast /* = false */)
    { try {
       account_object son_account = get_account(owner_account);
@@ -1872,6 +1874,8 @@ public:
       son_create_op.owner_account = son_account.id;
       son_create_op.signing_key = son_public_key;
       son_create_op.url = url;
+      son_create_op.deposit = deposit_id;
+      son_create_op.pay_vb = pay_vb_id;
 
       if (_remote_db->get_son_by_account(son_create_op.owner_account))
          FC_THROW("Account ${owner_account} is already a SON", ("owner_account", owner_account));
@@ -4276,9 +4280,11 @@ signed_transaction wallet_api::create_vesting(string owner_account,
 
 signed_transaction wallet_api::create_son(string owner_account,
                                           string url,
+                                          vesting_balance_id_type deposit_id,
+                                          vesting_balance_id_type pay_vb_id,
                                           bool broadcast /* = false */)
 {
-   return my->create_son(owner_account, url, broadcast);
+   return my->create_son(owner_account, url, deposit_id, pay_vb_id, broadcast);
 }
 
 signed_transaction wallet_api::update_son(string owner_account,
