@@ -62,7 +62,7 @@ public:
         // attempt to give son account some CORE tokens
         BOOST_TEST_MESSAGE("Transferring CORE tokens from Nathan to son account");
         transfer_tx = fixture_.con.wallet_api_ptr->transfer(
-              "nathan", account_name, "15000", "1.3.0", "Here are some CORE token for your new account", true
+              "nathan", account_name, "65000", "1.3.0", "Here are some CORE token for your new account", true
         );
 
         BOOST_CHECK(fixture_.generate_block());
@@ -76,6 +76,14 @@ public:
         BOOST_CHECK(son_account.is_lifetime_member());
 
         BOOST_CHECK(fixture_.generate_block());
+
+        // create deposit vesting
+        fixture_.con.wallet_api_ptr->create_vesting(account_name, "50", "son", true);
+        BOOST_CHECK(fixture_.generate_block());
+
+        // check deposit is here
+        auto deposits = fixture_.con.wallet_api_ptr->get_vesting_balances(account_name);
+        BOOST_CHECK(deposits.size() == 1);
 
         create_tx = fixture_.con.wallet_api_ptr->create_son(account_name, son_url, true);
 
