@@ -2102,6 +2102,38 @@ public:
       return sign_transaction( tx, broadcast );
    }
 
+   signed_transaction create_vesting(string owner_account,
+                                     string amount,
+                                     string vesting_type,
+                                     bool broadcast /* = false */)
+   { try {
+      account_object son_account = get_account(owner_account);
+
+      vesting_balance_create_operation op;
+      op.creator = son_account.get_id();
+      op.owner = son_account.get_id();
+      op.amount = asset_object().amount_from_string(amount);
+      if (vesting_type == "normal")
+          op.balance_type = vesting_balance_type::normal;
+      else if (vesting_type == "gpos")
+          op.balance_type = vesting_balance_type::gpos;
+      else if (vesting_type == "son")
+          op.balance_type = vesting_balance_type::son;
+      else
+      {
+          FC_ASSERT( false, "unknown vesting type value ${vt}", ("vt", vesting_type) );
+      }
+      if (op.balance_type == vesting_balance_type::son)
+          op.policy = dormant_vesting_policy_initializer {};
+
+      signed_transaction tx;
+      tx.operations.push_back( op );
+      set_operation_fees( tx, _remote_db->get_global_properties().parameters.current_fees);
+      tx.validate();
+
+      return sign_transaction( tx, broadcast );
+   } FC_CAPTURE_AND_RETHROW( (owner_account)(broadcast) ) }
+
    vector< vesting_balance_object_with_info > get_vesting_balances( string account_name )
    { try {
       fc::optional<vesting_balance_id_type> vbid = maybe_id<vesting_balance_id_type>( account_name );
@@ -4232,6 +4264,14 @@ witness_object wallet_api::get_witness(string owner_account)
 committee_member_object wallet_api::get_committee_member(string owner_account)
 {
    return my->get_committee_member(owner_account);
+}
+
+signed_transaction wallet_api::create_vesting(string owner_account,
+                                              string amount,
+                                              string vesting_type,
+                                              bool broadcast /* = false */)
+{
+   return my->create_vesting(owner_account, amount, vesting_type, broadcast);
 }
 
 signed_transaction wallet_api::create_son(string owner_account,
