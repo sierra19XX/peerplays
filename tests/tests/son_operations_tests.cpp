@@ -607,7 +607,7 @@ BOOST_AUTO_TEST_CASE( son_witness_proposal_test )
          _s.status = son_status::in_maintenance;
       });
 
-      // Modify the transaction signed statistics of Alice's SON
+      // Modify the Alice's SON down timestamp to now-12 hours
       db.modify( *son_stats_obj1, [&]( son_statistics_object& _s)
       {
          _s.last_down_timestamp = fc::time_point_sec(db.head_block_time() - fc::hours(12));
@@ -619,7 +619,7 @@ BOOST_AUTO_TEST_CASE( son_witness_proposal_test )
          _s.status = son_status::in_maintenance;
       });
 
-      // Modify the transaction signed statistics of Alice's SON
+      // Modify the Bob's SON down timestamp to now-12 hours
       db.modify( *son_stats_obj2, [&]( son_statistics_object& _s)
       {
          _s.last_down_timestamp = fc::time_point_sec(db.head_block_time() - fc::hours(12));
@@ -649,6 +649,7 @@ BOOST_AUTO_TEST_CASE( son_witness_proposal_test )
       }
       BOOST_CHECK( son_proposal_idx.size() == 0 && proposal_idx.size() == 0 );
       BOOST_REQUIRE( idx.size() == 0 );
+      generate_block();
    } FC_LOG_AND_RETHROW()
 
 } BOOST_AUTO_TEST_SUITE_END()
