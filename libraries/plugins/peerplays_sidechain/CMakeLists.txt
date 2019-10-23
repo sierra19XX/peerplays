@@ -7,7 +7,7 @@ add_library( peerplays_sidechain
              sidechain_net_handler_bitcoin.cpp
            )
 
-target_link_libraries( peerplays_sidechain graphene_chain graphene_app )
+target_link_libraries( peerplays_sidechain graphene_chain graphene_app fc zmq )
 target_include_directories( peerplays_sidechain
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
