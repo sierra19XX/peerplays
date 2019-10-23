@@ -7,7 +7,7 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include <fc/crypto/base64.hpp>
-#include <fc/logger/log.hpp>
+#include <fc/log/logger.hpp>
 #include <fc/network/ip.hpp>
 
 namespace graphene { namespace peerplays_sidechain {
