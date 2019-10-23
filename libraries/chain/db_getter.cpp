@@ -183,6 +183,7 @@ fc::optional<operation> database::create_son_deregister_proposal(const son_id_ty
 {
    son_delete_operation son_dereg_op;
    son_dereg_op.payer = current_witness.witness_account;
+   son_dereg_op.son_id = son_id;
 
    proposal_create_operation proposal_op;
    proposal_op.fee_paying_account = current_witness.witness_account;
@@ -244,5 +245,15 @@ void database::remove_son_proposal( const proposal_object& proposal )
       remove( *son_proposal_itr );
    }
 } FC_CAPTURE_AND_RETHROW( (proposal) ) }
+
+bool database::is_son_dereg_valid( const son_id_type& son_id )
+{
+   const auto& son_idx = get_index_type<son_index>().indices().get< by_id >();
+   auto son = son_idx.find( son_id );
+   FC_ASSERT( son != son_idx.end() );
+   bool ret = ( son->status == son_status::in_maintenance &&
+                (head_block_time() - son->statistics(*this).last_down_timestamp >= fc::hours(SON_DEREGISTER_TIME)));
+   return ret;
+}
 
 } }
