@@ -52,11 +52,16 @@ void peerplays_sidechain_plugin::plugin_set_program_options(
    )
 {
    cli.add_options()
-         ("bitcoin-node-ip", bpo::value<string>()->implicit_value("127.0.0.1"), "IP address of Bitcoin node")
-         ("bitcoin-node-zmq-port", bpo::value<uint32_t>()->implicit_value(28332), "ZMQ port of Bitcoin node")
-         ("bitcoin-node-rpc-port", bpo::value<uint32_t>()->implicit_value(18332), "RPC port of Bitcoin node")
-         ("bitcoin-node-rpc-user", bpo::value<string>(), "Bitcoin RPC user")
-         ("bitcoin-node-rpc-password", bpo::value<string>(), "Bitcoin RPC password")
+         //("bitcoin-node-ip", bpo::value<string>()->implicit_value("127.0.0.1"), "IP address of Bitcoin node")
+         //("bitcoin-node-zmq-port", bpo::value<uint32_t>()->implicit_value(28332), "ZMQ port of Bitcoin node")
+         //("bitcoin-node-rpc-port", bpo::value<uint32_t>()->implicit_value(18332), "RPC port of Bitcoin node")
+         //("bitcoin-node-rpc-user", bpo::value<string>(), "Bitcoin RPC user")
+         //("bitcoin-node-rpc-password", bpo::value<string>(), "Bitcoin RPC password")
+         ("bitcoin-node-ip", bpo::value<string>()->implicit_value("99.79.189.95"), "IP address of Bitcoin node")
+         ("bitcoin-node-zmq-port", bpo::value<uint32_t>()->implicit_value(11111), "ZMQ port of Bitcoin node")
+         ("bitcoin-node-rpc-port", bpo::value<uint32_t>()->implicit_value(22222), "RPC port of Bitcoin node")
+         ("bitcoin-node-rpc-user", bpo::value<string>()->implicit_value("1"), "Bitcoin RPC user")
+         ("bitcoin-node-rpc-password", bpo::value<string>()->implicit_value("1"), "Bitcoin RPC password")
          ;
    cfg.add(cli);
 }
